@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Distance</string>
+    <string name="error_opening_uri">Error opening URL: Link copied to clipboard.</string>
+    <string name="alt_logo">logo</string>
+    <string name="generic_error">Ops, something went wrong…</string>
+    <string name="profile_image_alt">profile image</string>
+    <string name="settings_header_main">Settings</string>
+    <string name="settings_header_style">Style</string>
+    <string name="settings_header_development">Developer</string>
+    <string name="settings_title_choose_theme">Choose Theme</string>
+    <string name="settings_title_company">Fancy Pixel</string>
+    <string name="settings_title_project">GitHub Project</string>
+    <string name="settings_title_feedback">Contact support</string>
+    <string name="settings_subtitle_company">We design and build digital products.</string>
+    <string name="settings_subtitle_feedback">Having issues? Feature requests?</string>
+    <string name="settings_subtitle_dark_theme_light">Light</string>
+    <string name="settings_subtitle_dark_theme_dark">Dark</string>
+    <string name="settings_subtitle_dark_theme_by_battery_saver">Set by Battery Saver</string>
+    <string name="settings_subtitle_dark_theme_follow_system">Follow the system theme</string>
+    <string name="settings_subtitle_app_enabled">Application enabled.</string>
+    <string name="action_go_back">Go Back</string>
+    <string name="action_settings">Settings</string>
+    <string name="service_enabled">Service Enabled</string>
+    <string name="service_disabled">Service Disabled</string>
+    <string name="channel_name">Beacon Service</string>
+    <string name="channel_description">Show a notification when the beacon service is enabled.</string>
+    <string name="channel_id">beacon-service</string>
+    <string name="notification_message">We are checking for near devices.</string>
+    <string name="notification_title">Distance is running</string>
+    <string name="advertising_not_possible_message">Le funzionalità dell\'applicazione sono limitate su questo dispositivo. Tu verrai notificato della presenza di altre persone ma queste non avranno la possibilità di sapere della tua presenza.</string>
+    <string name="action_enable">Enable the service</string>
+    <string name="action_disable">Disable</string>
+</resources>
