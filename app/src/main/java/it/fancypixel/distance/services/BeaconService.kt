@@ -16,6 +16,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
+import it.fancypixel.distance.components.events.NearbyBeaconEvent
 import it.fancypixel.distance.global.Constants
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.utils.toast
@@ -27,6 +28,7 @@ import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.BeaconTransmitter
 import org.altbeacon.beacon.MonitorNotifier
 import org.altbeacon.beacon.Region
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 
 
@@ -69,7 +71,7 @@ class BeaconService : Service(), BeaconConsumer {
                     .setPriority(NotificationCompat.PRIORITY_LOW)
 
                 // Action to disable the app
-                val actionIntent: PendingIntent = PendingIntent.getBroadcast(this@BeaconService, 1, Intent(this@BeaconService, DisableServiceReceiver::class.java).apply {
+                val actionIntent: PendingIntent = PendingIntent.getBroadcast(this@BeaconService, 1, Intent(this@BeaconService, ToggleServiceReceiver::class.java).apply {
                     action = Constants.ACTION_STOP_FOREGROUND_SERVICE
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         putExtra(EXTRA_NOTIFICATION_ID, 0)
@@ -144,6 +146,7 @@ class BeaconService : Service(), BeaconConsumer {
                     var isSomeoneNear = false
                     for (beacon in beacons) {
                         Log.d(TAG, "I see a beacon at ${beacon.distance} meters away.")
+                        EventBus.getDefault().post(NearbyBeaconEvent(beacon))
                         isSomeoneNear = isSomeoneNear || beacon.distance < 2L
                     }
 

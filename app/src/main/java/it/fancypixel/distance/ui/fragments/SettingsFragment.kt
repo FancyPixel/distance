@@ -23,6 +23,7 @@ import it.fancypixel.distance.databinding.SettingsFragmentBinding
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.openURI
+import it.fancypixel.distance.utils.sendEmailTo
 import kotlinx.android.synthetic.main.settings_fragment.*
 import net.idik.lib.slimadapter.SlimAdapter
 
@@ -180,16 +181,16 @@ class SettingsFragment : Fragment() {
                 R.drawable.round_business_24,
                 View.OnClickListener { activity?.openURI("https://www.fancypixel.it/") })
         )
-//        settings.add(
-//            SettingsItem(
-//                getString(R.string.settings_title_feedback),
-//                getString(R.string.settings_subtitle_feedback),
-//                R.drawable.round_send_24,
-//                View.OnClickListener {
-//                    activity?.sendEmailTo("rgb@fancypixel.it")
-//                }
-//            )
-//        )
+        settings.add(
+            SettingsItem(
+                getString(R.string.settings_title_feedback),
+                getString(R.string.settings_subtitle_feedback),
+                R.drawable.round_send_24,
+                View.OnClickListener {
+                    activity?.sendEmailTo("support@fancypixel.it")
+                }
+            )
+        )
 
         viewModel.settings.value = settings
     }

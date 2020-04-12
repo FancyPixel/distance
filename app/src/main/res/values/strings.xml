@@ -30,4 +30,7 @@
     <string name="advertising_not_possible_message">Le funzionalità dell\'applicazione sono limitate su questo dispositivo. Tu verrai notificato della presenza di altre persone ma queste non avranno la possibilità di sapere della tua presenza.</string>
     <string name="action_enable">Enable the service</string>
     <string name="action_disable">Disable</string>
+    <string name="header_nearby_beacons">Nearby devices: %d</string>
+    <string name="title_enabled">Enabled</string>
+    <string name="empty_nearby_beacons_list_message">No nearby devices.</string>
 </resources>

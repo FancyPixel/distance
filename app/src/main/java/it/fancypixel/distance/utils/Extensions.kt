@@ -112,3 +112,15 @@ fun Activity.isDarkTheme(): Boolean {
 }
 
 fun Activity.isNotificationAccessGranted(): Boolean = Settings.Secure.getString(this.contentResolver,"enabled_notification_listeners").contains(this.packageName)
+
+fun Activity.sendEmailTo(email: String) {
+    val i = Intent(Intent.ACTION_VIEW).apply {
+        data = Uri.parse("mailto:$email")
+    }
+    try {
+        startActivity(Intent.createChooser(i, getString(R.string.settings_title_feedback)))
+    } catch (ex: java.lang.Exception) {
+        toast(getString(R.string.generic_error))
+    }
+
+}

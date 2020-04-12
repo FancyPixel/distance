@@ -33,14 +33,6 @@ class MainActivity : AppCompatActivity() {
     setContentView(R.layout.activity_main)
 
     viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-
-    viewModel.isServiceEnabled.observe(this, Observer {
-      if (it) {
-        BeaconService.startService(this)
-      } else {
-        BeaconService.stopService(this)
-      }
-    })
   }
 
   override fun onResume() {
