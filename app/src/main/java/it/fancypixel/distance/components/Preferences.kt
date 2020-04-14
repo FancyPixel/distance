@@ -7,4 +7,6 @@ import com.chibatching.kotpref.KotprefModel
 object Preferences : KotprefModel() {
     var isServiceEnabled by booleanPref(default = false)
     var darkThemePreference by intPref(default = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) MODE_NIGHT_FOLLOW_SYSTEM else MODE_NIGHT_AUTO_BATTERY)
+    var deviceMajor by intPref(default = -1)
+    var deviceMinor by intPref(default = -1)
 }

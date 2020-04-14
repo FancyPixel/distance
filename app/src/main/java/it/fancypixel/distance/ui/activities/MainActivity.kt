@@ -13,6 +13,7 @@ import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import it.fancypixel.distance.R
+import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.services.BeaconService
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.toast
@@ -33,6 +34,9 @@ class MainActivity : AppCompatActivity() {
     setContentView(R.layout.activity_main)
 
     viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
+    // Restart the Service
+    viewModel.restartService()
   }
 
   override fun onResume() {

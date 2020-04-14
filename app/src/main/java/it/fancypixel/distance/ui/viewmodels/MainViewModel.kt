@@ -1,12 +1,10 @@
 package it.fancypixel.distance.ui.viewmodels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.chibatching.kotpref.livedata.asLiveData
-import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.services.BeaconService
 import org.altbeacon.beacon.Beacon
@@ -42,20 +40,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startService() {
-        BeaconService.startService(getApplication())
-    }
+        if (Preferences.deviceMajor < 0 || Preferences.deviceMinor < 0) {
+            Preferences.deviceMajor = (0 .. 65535).random()
+            Preferences.deviceMinor = (0 .. 65535).random()
 
-    fun stopService() {
-        BeaconService.stopService(getApplication())
-    }
-
-    fun toggleService() {
-        if (Preferences.isServiceEnabled) {
-            BeaconService.stopService(getApplication())
-        } else {
-            BeaconService.startService(getApplication())
+            // TODO: send to backend to check uniqueness
         }
+        BeaconService.startBeaconService(getApplication())
     }
+
+    fun stopService() = BeaconService.stopBeaconService(getApplication())
+
+    fun toggleService() = if (Preferences.isServiceEnabled) stopService() else startService()
+    fun restartService() = if (Preferences.isServiceEnabled) startService() else stopService()
 
     fun clearNearbyBeacons() {
         _nearbyBeacons.value = arrayListOf()

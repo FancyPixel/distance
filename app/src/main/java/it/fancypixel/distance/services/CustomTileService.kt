@@ -1,6 +1,5 @@
 package it.fancypixel.distance.services
 
-import android.graphics.drawable.Icon
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -16,13 +15,13 @@ class CustomTileService: TileService(){
 
         val tile = qsTile
         if (Preferences.isServiceEnabled) {
-            BeaconService.stopService(this)
+            BeaconService.stopBeaconService(this)
             tile.state = Tile.STATE_INACTIVE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 tile.subtitle = getString(R.string.service_disabled)
             }
         } else {
-            BeaconService.startService(this)
+            BeaconService.startBeaconService(this)
             tile.state = Tile.STATE_ACTIVE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 tile.subtitle = getString(R.string.service_enabled)
