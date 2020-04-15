@@ -1,20 +1,27 @@
 package it.fancypixel.distance.ui.activities
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionDeniedResponse
+import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import com.karumi.dexter.listener.single.PermissionListener
 import it.fancypixel.distance.R
-import it.fancypixel.distance.components.Preferences
-import it.fancypixel.distance.services.BeaconService
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.toast
 
@@ -29,6 +36,23 @@ class MainActivity : AppCompatActivity() {
     )
   }
 
+  private val bluetoothBroadcastReceiver by lazy {
+    object : BroadcastReceiver() {
+      override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
+          when(val status = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)) {
+            BluetoothAdapter.STATE_OFF,
+            BluetoothAdapter.STATE_TURNING_OFF,
+            BluetoothAdapter.STATE_ON,
+            BluetoothAdapter.STATE_TURNING_ON -> {
+              viewModel.updateBluetoothStatus(status)
+            }
+          }
+        }
+      }
+    }
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
@@ -41,31 +65,23 @@ class MainActivity : AppCompatActivity() {
 
   override fun onResume() {
     super.onResume()
-    Dexter.withContext(this@MainActivity)
-      .withPermissions(
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.BLUETOOTH,
-        Manifest.permission.BLUETOOTH_ADMIN
-      ).withListener(object: MultiplePermissionsListener {
-        override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
-          report?.let {
-            if (report.areAllPermissionsGranted()){
-//              toast("OK")
-            }
-          }
-        }
-        override fun onPermissionRationaleShouldBeShown(
-          permissions: MutableList<PermissionRequest>?,
-          token: PermissionToken?
-        ) {
-          // Remember to invoke this method when the custom rationale is closed
-          // or just by default if you don't want to use any custom rationale.
-          token?.continuePermissionRequest()
-        }
-      })
-      .withErrorListener {
-        toast(it.name)
-      }
-      .check()
+
+    // Update the bluetooth status
+    with(BluetoothAdapter.getDefaultAdapter()) {
+      viewModel.updateBluetoothStatus(if (isEnabled) BluetoothAdapter.STATE_ON else BluetoothAdapter.STATE_OFF)
+    }
+
+    // Check location permission
+    viewModel.isPermissionGranted.value = checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+    val intentFiler = IntentFilter().apply {
+      addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+    }
+    registerReceiver(bluetoothBroadcastReceiver, intentFiler)
+  }
+
+  override fun onDestroy() {
+    unregisterReceiver(bluetoothBroadcastReceiver)
+    super.onDestroy()
   }
 }

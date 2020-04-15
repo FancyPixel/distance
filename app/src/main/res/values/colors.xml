@@ -13,4 +13,5 @@
     <color name="colorSecondaryText">#99000000</color>
     <color name="errorColorBackground">#FBD8D8</color>
     <color name="errorColorText">#E93B3B</color>
+    <color name="snackbarBackgroundColor">#323232</color>
 </resources>

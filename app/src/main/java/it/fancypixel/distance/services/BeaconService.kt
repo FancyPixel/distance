@@ -5,10 +5,17 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseSettings
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioManager
+import android.media.RingtoneManager
+import android.media.ToneGenerator
+import android.net.Uri
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -38,11 +45,21 @@ class BeaconService : Service(), BeaconConsumer {
     private val beaconParser by lazy { BeaconParser().setBeaconLayout(BEACON_LAYOUT) }
     private val beaconTransmitter by lazy { BeaconTransmitter(this, beaconParser) }
 
-    private var hasVibrated = false
+    private val bluetoothBroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
+                    updateServiceNotification()
+                }
+            }
+        }
+    }
 
+    private var hasBeenNotified = false
 
     // Get instance of Vibrator from current Context
     private val v: Vibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
+    private val ringtone by lazy { ToneGenerator(AudioManager.STREAM_NOTIFICATION, 500) }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val isAdvertisingPossible = BeaconTransmitter.checkTransmissionSupported(this) == BeaconTransmitter.SUPPORTED
@@ -58,12 +75,17 @@ class BeaconService : Service(), BeaconConsumer {
                 RunningAverageRssiFilter.setSampleExpirationMilliseconds(5000L)
 
                 // Start the service in foreground
-                startForeground(NOTIFICATION_ID, getServiceNotificationBuilder().build())
+                beaconManager.enableForegroundServiceScanning(getServiceNotificationBuilder().build(), NOTIFICATION_ID)
                 beaconManager.setEnableScheduledScanJobs(false)
+
+                with(NotificationManagerCompat.from(this)) {
+                    notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
+                }
+                beaconManager.backgroundMode = true
 
                 // Update th parser to handle the iBeacon format
                 beaconManager.beaconParsers.clear()
-                beaconManager.beaconParsers.add(BeaconParser().setBeaconLayout(BEACON_LAYOUT))
+                beaconManager.beaconParsers.add(beaconParser)
 
                 beaconManager.bind(this@BeaconService)
                 Preferences.isServiceEnabled = true
@@ -82,12 +104,14 @@ class BeaconService : Service(), BeaconConsumer {
         return START_NOT_STICKY
     }
 
-    // ADVERTISING
     private fun startAdvertising() {
+        val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager?
+        val batLevel = bm!!.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+
         val beacon = Beacon.Builder()
             .setId1(BEACON_ID)
             .setId2(Preferences.deviceMajor.toString())
-            .setId3(Preferences.deviceMinor.toString())
+            .setId3("${Preferences.deviceMinor}${batLevel - 1}")
             .setManufacturer(0x004c)
             .setTxPower(-59)
             .build()
@@ -104,7 +128,6 @@ class BeaconService : Service(), BeaconConsumer {
         })
     }
 
-    // BEACON HANDLER
     override fun onBeaconServiceConnect() {
         beaconManager.removeAllMonitorNotifiers()
         beaconManager.removeAllRangeNotifiers()
@@ -112,65 +135,105 @@ class BeaconService : Service(), BeaconConsumer {
         beaconManager.addMonitorNotifier(object : MonitorNotifier {
             override fun didEnterRegion(region: Region?) {
                 Log.i(TAG, "I just saw a beacon for the first time!")
+                beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, Identifier.parse(BEACON_ID), null, null))
+
+                beaconManager.addRangeNotifier { beacons, _ ->
+                    var isSomeoneNear = false
+                    for (beacon in beacons) {
+                        Log.d(TAG, "I see a beacon at ${beacon.distance} meters away with a ${(beacon.id3.toInt() % 100) + 1}% battery.")
+                        EventBus.getDefault().post(NearbyBeaconEvent(beacon))
+                        isSomeoneNear = isSomeoneNear || beacon.distance < 2.0
+                    }
+
+                    notifyIf(isSomeoneNear)
+                }
             }
 
             override fun didExitRegion(region: Region?) {
-                Log.i(TAG, "I no longer see a beacon")
+                Log.i(TAG, "I no longer see a beacon.")
             }
 
             override fun didDetermineStateForRegion(state: Int, region: Region?) {
                 Log.i(TAG, "I have just switched from seeing/not seeing beacons: $state")
+
+                beaconManager.backgroundBetweenScanPeriod = if (state > 0) 1900L else 10000L
+                beaconManager.backgroundScanPeriod = if (state > 0) 1100L else 1100L
             }
         })
 
-        beaconManager.addRangeNotifier { beacons, _ ->
-            var isSomeoneNear = false
-            for (beacon in beacons) {
-                Log.d(TAG, "I see a beacon at ${beacon.distance} meters away.")
-                EventBus.getDefault().post(NearbyBeaconEvent(beacon))
-                isSomeoneNear = isSomeoneNear || beacon.distance < 2L
-            }
-
-            vibrateIf(isSomeoneNear)
-        }
-
-        startMonitoring()
-    }
-
-    private fun startMonitoring() {
         try {
-            beaconManager.startMonitoringBeaconsInRegion(Region(REGION_TAG, null, null, null))
+            beaconManager.startMonitoringBeaconsInRegion(Region(REGION_TAG, Identifier.parse(BEACON_ID), null, null))
         } catch (e: RemoteException) {
             toast(getString(R.string.generic_error))
             stopBeaconService(this)
         }
     }
 
-    private fun vibrateIf(isSomeoneNear: Boolean) {
+    private fun notifyIf(isSomeoneNear: Boolean) {
         if (isSomeoneNear) {
-            if (!hasVibrated) {
-                hasVibrated = true
-                val pattern = longArrayOf(0, 100, 100, 100, 100, 100, 3000)
-                if (Build.VERSION.SDK_INT >= 26) {
-                    v.vibrate(
-                        VibrationEffect.createWaveform(
-                            pattern,
-                            VibrationEffect.DEFAULT_AMPLITUDE
+            if (!hasBeenNotified) {
+                if (!isInteractive()) {
+                    wakeUpThePhone()
+                }
+                hasBeenNotified = true
+
+                if (Preferences.notificationType != Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE) {
+                    try {
+                        ringtone.stopTone()
+                        ringtone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 500)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                if (Preferences.notificationType != Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND) {
+                    val pattern = longArrayOf(0, 100, 100, 100, 100, 100, 3000)
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        v.vibrate(
+                            VibrationEffect.createWaveform(
+                                pattern,
+                                VibrationEffect.DEFAULT_AMPLITUDE
+                            )
                         )
-                    )
-                } else {
-                    v.vibrate(pattern, -1)
+                    } else {
+                        v.vibrate(pattern, -1)
+                    }
                 }
 
                 GlobalScope.launch(Dispatchers.IO) {
                     delay(3000)
                     withContext(Dispatchers.Main) {
-                        hasVibrated = false
+                        hasBeenNotified = false
                     }
                 }
+
             }
         } else {
             v.cancel()
+            ringtone.stopTone()
+        }
+
+
+    }
+
+    private fun isInteractive(): Boolean {
+        val powerManager =
+            getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isInteractive
+    }
+
+    private fun wakeUpThePhone() {
+        val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.wakeup_notification_channel_id))
+            .setSmallIcon(R.drawable.ic_stat_person)
+            .setContentTitle("Someone is near")
+            .setContentText("Fly out, away you fool!")
+            .setSound(null)
+            .setColor(ContextCompat.getColor(this@BeaconService, R.color.colorAccent))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        with(NotificationManagerCompat.from(this)) {
+            notify(NOTIFICATION_ID + 1, builder.build())
+            cancel(NOTIFICATION_ID + 1)
         }
     }
 
@@ -178,10 +241,20 @@ class BeaconService : Service(), BeaconConsumer {
         // Handle the notification channel
         createNotificationChannel(this@BeaconService)
 
-        val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.channel_id))
+        var title = getString(R.string.notification_title)
+        var subtitle = getString(R.string.notification_message)
+
+        with(BluetoothAdapter.getDefaultAdapter()) {
+            if (!isEnabled) {
+                title = this@BeaconService.getString(R.string.notification_title_with_ble_off)
+                subtitle = this@BeaconService.getString(R.string.notification_message_with_ble_off)
+            }
+        }
+
+        val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.ongoing_notification_channel_id))
             .setSmallIcon(R.drawable.ic_stat_person)
-            .setContentTitle(getString(R.string.notification_title))
-            .setContentText(getString(R.string.notification_message))
+            .setContentTitle(title)
+            .setContentText(subtitle)
             .setColor(ContextCompat.getColor(this@BeaconService, R.color.colorAccent))
             .setAutoCancel(false)
             .setOngoing(true)
@@ -204,22 +277,39 @@ class BeaconService : Service(), BeaconConsumer {
         return builder
     }
 
+    private fun updateServiceNotification() {
+        if (Preferences.isServiceEnabled) {
+            with(NotificationManagerCompat.from(this)) {
+                notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
+            }
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        val intentFiler = IntentFilter().apply {
+            addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+        }
+        registerReceiver(bluetoothBroadcastReceiver, intentFiler)
+    }
+
     override fun onDestroy() {
         Preferences.isServiceEnabled = false
         with(NotificationManagerCompat.from(this)) {
             cancel(NOTIFICATION_ID)
         }
+        unregisterReceiver(bluetoothBroadcastReceiver)
+        ringtone.release()
         super.onDestroy()
     }
 
     companion object {
         private const val NOTIFICATION_ID = 364
-        private const val REGION_TAG = "REGION_NEAR"
-        private const val BEACON_ID = "A2B2265F-77F6-4C6A-82ED-297B366FC684"
-        private const val BEACON_LAYOUT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"
+        const val REGION_TAG = "REGION_NEAR"
+        const val BEACON_ID = "A2B2265F-77F6-4C6A-82ED-297B366FC684"
+        const val BEACON_LAYOUT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"
 
         fun startBeaconService(mContext: Context) {
-
             val startIntent = Intent(mContext, BeaconService::class.java)
             startIntent.action = Constants.ACTION_START_FOREGROUND_SERVICE
             mContext.startService(startIntent)
@@ -235,15 +325,25 @@ class BeaconService : Service(), BeaconConsumer {
             // Create the NotificationChannel, but only on API 26+ because
             // the NotificationChannel class is new and not in the support library
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val name = mContext.getString(R.string.channel_name)
-                val descriptionText = mContext.getString(R.string.channel_description)
-                val importance = NotificationManager.IMPORTANCE_LOW
-                val channel = NotificationChannel(mContext.getString(R.string.channel_id), name, importance).apply {
-                    description = descriptionText
+                with(NotificationManagerCompat.from(mContext)) {
+                    createNotificationChannel(
+                        NotificationChannel(
+                            mContext.getString(R.string.ongoing_notification_channel_id),
+                            mContext.getString(R.string.ongoing_notification_channel_name),
+                            NotificationManager.IMPORTANCE_LOW
+                        ).apply {
+                            description = mContext.getString(R.string.ongoing_notification_channel_description)
+                        })
+
+                    createNotificationChannel(
+                        NotificationChannel(
+                            mContext.getString(R.string.wakeup_notification_channel_id),
+                            mContext.getString(R.string.wakeup_notification_channel_name),
+                            NotificationManager.IMPORTANCE_DEFAULT
+                        ).apply {
+                            description = mContext.getString(R.string.wakeup_notification_channel_description)
+                        })
                 }
-                // Register the channel with the system
-                val notificationManager = NotificationManagerCompat.from(mContext)
-                notificationManager.createNotificationChannel(channel)
             }
         }
     }

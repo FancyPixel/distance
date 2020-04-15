@@ -18,6 +18,7 @@ import android.util.Patterns
 import java.security.NoSuchAlgorithmException
 import kotlin.math.max
 import android.content.Intent
+import android.util.TypedValue
 import it.fancypixel.distance.R
 
 
@@ -28,6 +29,8 @@ fun Context.toast(message: String) {
 //    toast.setGravity(Gravity.CENTER, 0, 0)
     toast.show()
 }
+
+fun Int.toPixel(context: Context): Int = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this.toFloat(), context.resources.displayMetrics).toInt()
 
 fun View.reveal(initialX: Int, initialY: Int) {
     when (visibility) {
