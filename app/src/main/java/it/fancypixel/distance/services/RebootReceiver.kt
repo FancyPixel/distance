@@ -11,7 +11,6 @@ class RebootReceiver : BroadcastReceiver() {
         when(intent.action) {
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED -> {
-                val prefs = Preferences
                 if (Preferences.isServiceEnabled) {
                     BeaconService.startBeaconService(context)
                 }

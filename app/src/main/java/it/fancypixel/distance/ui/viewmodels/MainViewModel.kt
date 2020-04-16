@@ -28,7 +28,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var darkThemeMode: LiveData<Int> = Preferences.asLiveData(Preferences::darkThemePreference)
     var tolerance: LiveData<Int> = Preferences.asLiveData(Preferences::tolerance)
     var deviceLocation: LiveData<Int> = Preferences.asLiveData(Preferences::deviceLocation)
+    var debug: LiveData<Boolean> = Preferences.asLiveData(Preferences::debug)
     var notificationType: LiveData<Int> = Preferences.asLiveData(Preferences::notificationType)
+    var batteryLevel: LiveData<Boolean> = Preferences.asLiveData(Preferences::useBatteryLevel)
     val settings: MutableLiveData<ArrayList<Any>> = MutableLiveData(ArrayList())
 
     var isServiceEnabled: LiveData<Boolean> = Preferences.asLiveData(Preferences::isServiceEnabled)
@@ -52,7 +54,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val iterator: MutableListIterator<Any> = list.listIterator()
             while (iterator.hasNext()) {
                 val next = iterator.next()
-                if (next is Beacon && next.id2 == updatedBeacon.id2 && next.id3 == updatedBeacon.id3) {
+                if (next is Beacon && next.id2 == updatedBeacon.id2) {
                     iterator.set(updatedBeacon)
                     found = true
                 }
@@ -63,7 +65,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
             // Start timer to check when a beacon leave the region
-            val key = "${updatedBeacon.id2}_${updatedBeacon.id3}"
+            val key = "${updatedBeacon.id2}"
             if (beaconsRegisteredTime.containsKey(key)) {
                 beaconsRegisteredTime[key]!!.cancel()
             }
@@ -81,7 +83,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val iterator: MutableListIterator<Any> = list.listIterator()
                 while (iterator.hasNext()) {
                     val next = iterator.next()
-                    if (next is Beacon && "${next.id2}_${next.id3}" == key) {
+                    if (next is Beacon && "${next.id2}" == key) {
                         iterator.remove()
                         break
                     }
@@ -92,10 +94,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun startService() {
-        if (Preferences.deviceMajor < 0 || Preferences.deviceMinor < 0) {
+        if (Preferences.deviceMajor < 0) {
             Preferences.deviceMajor = (0 .. 65535).random()
-            Preferences.deviceMinor = (0 .. (654)).random()
-
             // TODO: send to backend to check uniqueness
         }
         BeaconService.startBeaconService(getApplication())
@@ -111,6 +111,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearNearbyBeacons() {
         _nearbyBeacons.value = arrayListOf()
+        beaconsRegisteredTime.clear()
     }
 
     fun updateBluetoothStatus(status: Int) = bluetoothStatus.postValue(status == BluetoothAdapter.STATE_OFF)

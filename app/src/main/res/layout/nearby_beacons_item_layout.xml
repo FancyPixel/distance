@@ -34,16 +34,6 @@
             android:text="Subtitle"
             android:textSize="14sp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
-        <androidx.appcompat.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/subtitle2"
-            android:fontFamily="sans-serif"
-            android:textColor="@color/colorPrimaryText"
-            android:alpha="0.8"
-            android:text="Subtitle"
-            android:textSize="14sp"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
     </LinearLayout>
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="wrap_content"
@@ -52,7 +42,7 @@
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         android:fontFamily="sans-serif-medium"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textAllCaps="true"
         android:text="1.2M"
         android:textColor="@color/colorPrimaryText"

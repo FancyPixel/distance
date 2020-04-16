@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="64dp"
             android:background="@color/colorPrimary"
-            android:elevation="2dp"
+            android:elevation="4dp"
             android:id="@+id/toolbar">
             <ImageView
                 android:layout_width="48dp"
@@ -76,46 +76,102 @@
             android:layout_height="match_parent"
             android:layout_below="@+id/toolbar"
             android:orientation="vertical">
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
-                android:paddingLeft="24dp"
-                android:paddingRight="24dp"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="@{(v) -> viewModel.toggleService(v)}"
-                android:background="?attr/selectableItemBackground"
-                android:gravity="center_vertical">
-                <androidx.appcompat.widget.AppCompatTextView
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="0dp"
+                android:elevation="2dp"
+                app:cardBackgroundColor="@color/colorPrimaryDark">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
+                        android:paddingLeft="24dp"
+                        android:paddingRight="24dp"
+                        android:orientation="horizontal"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:onClick="@{(v) -> viewModel.toggleService(v)}"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="@string/title_enabled"
+                            android:textSize="18sp"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textAllCaps="false" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/action_toggle"
+                            android:onClick="@{(v) -> viewModel.toggleService(v)}"
+                            android:checked="@{viewModel.isServiceEnabled()}"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/colorSecondaryText"
+                        android:alpha="0.15"/>
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:textAppearance="@style/AppTheme.HeaderTextAppearance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="24dp"
+                        android:paddingBottom="16dp"
+                        android:paddingLeft="24dp"
+                        android:paddingRight="24dp"
+                        android:gravity="center"
+                        android:text="@string/enabled_the_service_message"
+                        android:textColor="@color/colorAccent"
+                        android:id="@+id/header"/>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/beacons_list"
+                        android:paddingBottom="16dp"
+                        android:clipToPadding="false" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:padding="0dp"
+                android:layout_marginTop="-8dp"
+                app:singleSelection="true"
+                app:selectionRequired="true"
+                android:id="@+id/action_change_device_location"
+                android:backgroundTint="@color/colorAccent">
+                <com.google.android.material.button.MaterialButton
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="@string/title_enabled"
-                    android:textSize="18sp"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Button"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textAllCaps="false" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/action_toggle"
-                    android:onClick="@{(v) -> viewModel.toggleService(v)}"
-                    android:checked="@{viewModel.isServiceEnabled()}"/>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/colorSecondaryText"
-                android:alpha="0.15"/>
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/beacons_list"
-                android:paddingBottom="16dp"
-                android:clipToPadding="false" />
+                    android:layout_height="80dp"
+                    app:cornerRadius="0dp"
+                    android:textColor="@drawable/main_button_text_color"
+                    android:backgroundTint="@drawable/main_button_background"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:text="@string/settings_subtitle_device_location_pocket"
+                    android:id="@+id/button_pocket" />
+                <com.google.android.material.button.MaterialButton
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="80dp"
+                    app:cornerRadius="0dp"
+                    android:textColor="@drawable/main_button_text_color"
+                    android:backgroundTint="@drawable/main_button_background"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:text="@string/settings_subtitle_device_location_desk"
+                    android:id="@+id/button_desk" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
         </LinearLayout>
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

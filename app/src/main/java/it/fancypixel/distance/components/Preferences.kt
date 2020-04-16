@@ -13,4 +13,6 @@ object Preferences : KotprefModel() {
     var notificationType by intPref(default = Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE)
     var tolerance by intPref(default = Constants.PREFERENCE_TOLERANCE_DEFAULT)
     var deviceLocation by intPref(default = Constants.PREFERENCE_DEVICE_LOCATION_POCKET)
+    var useBatteryLevel by booleanPref(default = true)
+    var debug by booleanPref(default = false)
 }

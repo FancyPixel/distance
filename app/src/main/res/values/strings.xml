@@ -8,10 +8,10 @@
     <string name="settings_header_style">Style</string>
     <string name="settings_header_development">Developer</string>
     <string name="settings_title_choose_theme">Choose Theme</string>
-    <string name="settings_title_company">Fancy Pixel</string>
+    <string name="settings_title_company" translatable="false">Fancy Pixel</string>
     <string name="settings_title_project">GitHub Project</string>
     <string name="settings_title_feedback">Contact support</string>
-    <string name="settings_subtitle_company">We design and build digital products.</string>
+    <string name="settings_subtitle_company" translatable="false">We design and build digital products.</string>
     <string name="settings_subtitle_feedback">Having issues? Feature requests?</string>
     <string name="settings_subtitle_dark_theme_light">Light</string>
     <string name="settings_subtitle_dark_theme_dark">Dark</string>
@@ -24,10 +24,10 @@
     <string name="service_disabled">Service Disabled</string>
     <string name="ongoing_notification_channel_name">Running Service</string>
     <string name="ongoing_notification_channel_description">Show a notification when the beacon service is enabled.</string>
-    <string name="ongoing_notification_channel_id">beacon-service</string>
+    <string name="ongoing_notification_channel_id" translatable="false">beacon-service</string>
     <string name="wakeup_notification_channel_name">Beacon Notifier</string>
     <string name="wakeup_notification_channel_description">Show a notification when a beacon is near.</string>
-    <string name="wakeup_notification_channel_id">beacon-service-wakeup</string>
+    <string name="wakeup_notification_channel_id" translatable="false">beacon-service-wakeup</string>
     <string name="notification_message">We are checking for near devices.</string>
     <string name="notification_title">Distance is running</string>
     <string name="advertising_not_possible_message">The app functionality may be limited due to the device hardware.\nYou\'ll be able to discover near devices but you will not be visible to them.</string>
@@ -43,21 +43,32 @@
     <string name="action_grant_permission">Grant permission</string>
     <string name="request_permission_title">Location</string>
     <string name="request_permission_message">We will notify you when the\ndistance between you and the near\ndevices became dangerous.</string>
-    <string name="bluetooth_disabled_title">Bluetooth</string>
+    <string name="bluetooth_disabled_title" translatable="false">Bluetooth</string>
     <string name="bluetooth_disabled_message">We will use your Bluetooth to monitor\nyour distance from other devices.</string>
     <string name="action_turn_on_bluetooth">Turn on Bluetooth</string>
-    <string name="settings_title_tolerance">Distance tolerance</string>
+    <string name="settings_title_tolerance">Range</string>
     <string name="settings_subtitle_tolerance_low">Low</string>
     <string name="settings_subtitle_tolerance_min">Min</string>
     <string name="settings_subtitle_tolerance_default">Default</string>
     <string name="settings_subtitle_tolerance_high">High</string>
     <string name="settings_subtitle_tolerance_max">Max</string>
     <string name="settings_title_device_location">Device position</string>
-    <string name="settings_subtitle_device_location_pocket">In your pocket</string>
-    <string name="settings_subtitle_device_location_desk">On your desk</string>
+    <string name="settings_subtitle_device_location_pocket">In the pocket</string>
+    <string name="settings_subtitle_device_location_desk">On the desk</string>
     <string name="settings_subtitle_device_location_backpack">Inside your backpack</string>
-    <string name="settings_title_notification_type">Alert</string>
+    <string name="settings_title_notification_type">Alert type</string>
     <string name="settings_subtitle_notification_type_only_vibrate">Vibrate</string>
     <string name="settings_subtitle_notification_type_only_sound">Sound</string>
     <string name="settings_subtitle_notification_type_both">Vibrate and sound</string>
+    <string name="settings_title_battery_error">Battery level</string>
+    <string name="settings_subtitle_battery_error_on">Enabled</string>
+    <string name="settings_subtitle_battery_error_off">Disabled</string>
+    <string name="action_move_to_desk">Move to Desk</string>
+    <string name="action_move_to_pocket">Move to Pocket</string>
+    <string name="settings_header_tolerance">Tolerance</string>
+    <string name="settings_title_debug_log">Debug Log</string>
+    <string name="settings_subtitle_debug_log_on">Enabled</string>
+    <string name="settings_subtitle_debug_log_off">Disabled</string>
+    <string name="settings_title_id">Device ID</string>
+    <string name="device_location_unkown">Unknown</string>
 </resources>

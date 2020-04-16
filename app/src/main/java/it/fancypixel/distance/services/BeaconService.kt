@@ -41,7 +41,7 @@ class BeaconService : Service(), BeaconConsumer {
     }
 
     private val TAG = "MonitoringActivity"
-    private val beaconManager by lazy { BeaconManager.getInstanceForApplication(this).apply { isRegionStatePersistenceEnabled = !BuildConfig.DEBUG } }
+    private val beaconManager by lazy { BeaconManager.getInstanceForApplication(this).apply { isRegionStatePersistenceEnabled = false } }
     private val beaconParser by lazy { BeaconParser().setBeaconLayout(BEACON_LAYOUT) }
     private val beaconTransmitter by lazy { BeaconTransmitter(this, beaconParser) }
 
@@ -100,6 +100,10 @@ class BeaconService : Service(), BeaconConsumer {
 
             stopForeground(true)
             stopSelf()
+        } else if (intent.action == Constants.ACTION_UPDATE_THE_SERVICE_NOTIFICATION) {
+            with(NotificationManagerCompat.from(this)) {
+                notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
+            }
         }
         return START_NOT_STICKY
     }
@@ -111,7 +115,7 @@ class BeaconService : Service(), BeaconConsumer {
         val beacon = Beacon.Builder()
             .setId1(BEACON_ID)
             .setId2(Preferences.deviceMajor.toString())
-            .setId3("${Preferences.deviceMinor}${batLevel - 1}")
+            .setId3("${Preferences.deviceLocation}${"%03d".format(batLevel)}")
             .setManufacturer(0x004c)
             .setTxPower(-59)
             .build()
@@ -130,23 +134,10 @@ class BeaconService : Service(), BeaconConsumer {
 
     override fun onBeaconServiceConnect() {
         beaconManager.removeAllMonitorNotifiers()
-        beaconManager.removeAllRangeNotifiers()
 
         beaconManager.addMonitorNotifier(object : MonitorNotifier {
             override fun didEnterRegion(region: Region?) {
                 Log.i(TAG, "I just saw a beacon for the first time!")
-                beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, Identifier.parse(BEACON_ID), null, null))
-
-                beaconManager.addRangeNotifier { beacons, _ ->
-                    var isSomeoneNear = false
-                    for (beacon in beacons) {
-                        Log.d(TAG, "I see a beacon at ${beacon.distance} meters away with a ${(beacon.id3.toInt() % 100) + 1}% battery.")
-                        EventBus.getDefault().post(NearbyBeaconEvent(beacon))
-                        isSomeoneNear = isSomeoneNear || beacon.distance < 2.0
-                    }
-
-                    notifyIf(isSomeoneNear)
-                }
             }
 
             override fun didExitRegion(region: Region?) {
@@ -158,6 +149,52 @@ class BeaconService : Service(), BeaconConsumer {
 
                 beaconManager.backgroundBetweenScanPeriod = if (state > 0) 1900L else 10000L
                 beaconManager.backgroundScanPeriod = if (state > 0) 1100L else 1100L
+                beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, Identifier.parse(BEACON_ID), null, null))
+
+                beaconManager.removeAllRangeNotifiers()
+                beaconManager.addRangeNotifier { beacons, _ ->
+                    var isSomeoneNear = false
+                    for (beacon in beacons) {
+                        Log.d(TAG, "I see a beacon at ${beacon.distance} meters away with a ${beacon.id3.toInt() % 1000}% battery.")
+                        EventBus.getDefault().post(NearbyBeaconEvent(beacon))
+
+                        // Device location error
+                        val deviceLocationError = when (Preferences.deviceLocation) {
+                            Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 2.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 3.0
+                            else -> 0.0
+                        }
+
+                        val transmittingDeviceLocationError = when (beacon.id3.toInt() - beacon.id3.toInt() % 1000) {
+                            Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 2.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 3.0
+                            else -> 0.0
+                        }
+
+                        // Tolerance error
+                        val toleranceError = when (Preferences.tolerance) {
+                            Constants.PREFERENCE_TOLERANCE_LOW -> -1.0
+                            Constants.PREFERENCE_TOLERANCE_MIN -> -0.5
+                            Constants.PREFERENCE_TOLERANCE_DEFAULT -> 0.0
+                            Constants.PREFERENCE_TOLERANCE_HIGH -> 0.5
+                            Constants.PREFERENCE_TOLERANCE_MAX -> 1.0
+                            else -> 0.0
+                        }
+
+                        // Battery level error
+                        val level = beacon.id3.toInt() % 1000
+                        val batteryLevelError = (100 - level) / 100 * 10.0
+
+                        val calculatedMinDistance = 2.0 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError
+//                        toast("Distance: $deviceLocationError + $toleranceError + $batteryLevelError = $calculatedMinDistance")
+
+                        isSomeoneNear = isSomeoneNear || beacon.distance < calculatedMinDistance
+                    }
+
+                    notifyIf(isSomeoneNear)
+                }
             }
         })
 
@@ -261,6 +298,17 @@ class BeaconService : Service(), BeaconConsumer {
             .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
 
+        // Action to change the position of the device
+        val insidePocket = Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET
+        val changeDevicePositionIntent: PendingIntent = PendingIntent.getBroadcast(this@BeaconService, 2, Intent(this@BeaconService, ToggleServiceReceiver::class.java).apply {
+            action = if (insidePocket) Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_DESK else Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_POCKET
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                putExtra(EXTRA_NOTIFICATION_ID, 0)
+            }
+        }, 0)
+
+        builder.addAction(R.drawable.ic_stat_check, if (insidePocket) getString(R.string.action_move_to_desk) else getString(R.string.action_move_to_pocket), changeDevicePositionIntent)
+
         // Action to disable the app
         val actionIntent: PendingIntent = PendingIntent.getBroadcast(this@BeaconService, 1, Intent(this@BeaconService, ToggleServiceReceiver::class.java).apply {
             action = Constants.ACTION_STOP_FOREGROUND_SERVICE
@@ -318,6 +366,12 @@ class BeaconService : Service(), BeaconConsumer {
         fun stopBeaconService(mContext: Context) {
             val stopIntent = Intent(mContext, BeaconService::class.java)
             stopIntent.action = Constants.ACTION_STOP_FOREGROUND_SERVICE
+            mContext.startService(stopIntent)
+        }
+
+        fun updateNotification(mContext: Context) {
+            val stopIntent = Intent(mContext, BeaconService::class.java)
+            stopIntent.action = Constants.ACTION_UPDATE_THE_SERVICE_NOTIFICATION
             mContext.startService(stopIntent)
         }
 

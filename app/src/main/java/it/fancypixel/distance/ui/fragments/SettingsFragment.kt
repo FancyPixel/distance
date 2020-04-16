@@ -15,6 +15,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
@@ -36,6 +38,13 @@ class SettingsFragment : Fragment() {
         fun newInstance() = SettingsFragment()
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        enterTransition = MaterialFadeThrough.create(requireContext())
+        exitTransition = MaterialFadeThrough.create(requireContext())
+    }
+
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: SlimAdapter
 
@@ -47,7 +56,7 @@ class SettingsFragment : Fragment() {
         viewModel = ViewModelProvider(activity as MainActivity).get(MainViewModel::class.java)
         val binding = DataBindingUtil.inflate<SettingsFragmentBinding>(inflater, R.layout.settings_fragment, container, false)
 
-        subscribeUi(binding, viewModel.settings, viewModel.darkThemeMode, viewModel.tolerance, viewModel.deviceLocation, viewModel.notificationType)
+        subscribeUi(viewModel.settings, viewModel.darkThemeMode, viewModel.tolerance, viewModel.notificationType, viewModel.batteryLevel, viewModel.debug)
         binding.lifecycleOwner = this
 
         return binding.root
@@ -98,18 +107,7 @@ class SettingsFragment : Fragment() {
             .setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
                 Preferences.tolerance = item.tag as Int
             }
-            .build().showAsDropDown(view, 78.toPixel(activity!!), (-8).toPixel(activity!!))
-    }
-
-    private fun showDeviceLocationMenu(view: View) {
-        val deviceLocation = viewModel.deviceLocation.value
-        getStyledPowerMenuBuilder(context)
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_device_location_pocket), deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET, Constants.PREFERENCE_DEVICE_LOCATION_POCKET))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_device_location_desk), deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_DESK, Constants.PREFERENCE_DEVICE_LOCATION_DESK))
-            .setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
-                Preferences.deviceLocation = item.tag as Int
-            }
-            .build().showAsDropDown(view, 78.toPixel(activity!!), (-8).toPixel(activity!!))
+            .build().showAsDropDown(view, 20.toPixel(activity!!), (-10).toPixel(activity!!))
     }
 
     private fun showNotificationTypeMenu(view: View) {
@@ -121,7 +119,7 @@ class SettingsFragment : Fragment() {
             .setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
                 Preferences.notificationType = item.tag as Int
             }
-            .build().showAsDropDown(view, 78.toPixel(activity!!), (-8).toPixel(activity!!))
+            .build().showAsDropDown(view, 20.toPixel(activity!!), (-10).toPixel(activity!!))
     }
 
     private fun showDarkThemeMenu(view: View) {
@@ -140,7 +138,7 @@ class SettingsFragment : Fragment() {
             Preferences.darkThemePreference = item.tag as Int
         }
 
-        powerMenuBuilder.build().showAsDropDown(view, 78.toPixel(activity!!), (-8).toPixel(activity!!))
+        powerMenuBuilder.build().showAsDropDown(view, 20.toPixel(activity!!), (-10).toPixel(activity!!))
     }
 
     private fun getStyledPowerMenuBuilder(context: Context?) = PowerMenu.Builder(context)
@@ -157,12 +155,12 @@ class SettingsFragment : Fragment() {
         .setSelectedTextColor(ContextCompat.getColor(activity!!, R.color.colorAccent))
 
     private fun subscribeUi(
-        binding: SettingsFragmentBinding,
         settings: MutableLiveData<ArrayList<Any>>,
         darkThemeMode: LiveData<Int>,
         tolerance: LiveData<Int>,
-        deviceLocation: LiveData<Int>,
-        notificationType: LiveData<Int>
+        notificationType: LiveData<Int>,
+        batteryLevel: LiveData<Boolean>,
+        debug: LiveData<Boolean>
     ) {
         settings.observe(viewLifecycleOwner, Observer {
             adapter.updateData(it)
@@ -177,40 +175,120 @@ class SettingsFragment : Fragment() {
             updateSettingsMenu()
         })
 
-        deviceLocation.observe(viewLifecycleOwner, Observer {
-            updateSettingsMenu()
-        })
-
         notificationType.observe(viewLifecycleOwner, Observer {
             updateSettingsMenu()
         })
 
+        batteryLevel.observe(viewLifecycleOwner, Observer {
+            updateSettingsMenu()
+        })
 
+        debug.observe(viewLifecycleOwner, Observer {
+            updateSettingsMenu()
+        })
     }
 
     private fun updateSettingsMenu() {
         val settings = ArrayList<Any>()
         settings.add(getString(R.string.settings_header_main))
-        when (viewModel.deviceLocation.value) {
-            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> {
+
+        settings.add(
+            SettingsItem(
+                getString(R.string.settings_title_id),
+                "${Preferences.deviceMajor}".padStart(5, '0'),
+                R.drawable.round_notifications,
+                null)
+            )
+
+        when (viewModel.notificationType.value) {
+            Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE -> {
                 settings.add(
                     SettingsItem(
-                        getString(R.string.settings_title_device_location),
-                        getString(R.string.settings_subtitle_device_location_pocket),
-                        R.drawable.round_dock,
-                        View.OnClickListener { showDeviceLocationMenu(it) })
+                        getString(R.string.settings_title_notification_type),
+                        getString(R.string.settings_subtitle_notification_type_only_vibrate),
+                        R.drawable.round_notifications,
+                        View.OnClickListener { showNotificationTypeMenu(it) })
                 )
             }
-            Constants.PREFERENCE_DEVICE_LOCATION_DESK -> {
+            Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND -> {
                 settings.add(
                     SettingsItem(
-                        getString(R.string.settings_title_device_location),
-                        getString(R.string.settings_subtitle_device_location_desk),
-                        R.drawable.round_dock,
-                        View.OnClickListener { showDeviceLocationMenu(it) })
+                        getString(R.string.settings_title_notification_type),
+                        getString(R.string.settings_subtitle_notification_type_only_sound),
+                        R.drawable.round_notifications,
+                        View.OnClickListener { showNotificationTypeMenu(it) })
+                )
+            }
+            Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_notification_type),
+                        getString(R.string.settings_subtitle_notification_type_both),
+                        R.drawable.round_notifications,
+                        View.OnClickListener { showNotificationTypeMenu(it) })
                 )
             }
         }
+        when (viewModel.darkThemeMode.value) {
+            AppCompatDelegate.MODE_NIGHT_NO -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_choose_theme),
+                        getString(R.string.settings_subtitle_dark_theme_light),
+                        R.drawable.ic_day_night,
+                        View.OnClickListener { showDarkThemeMenu(it) })
+                )
+            }
+            AppCompatDelegate.MODE_NIGHT_YES -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_choose_theme),
+                        getString(R.string.settings_subtitle_dark_theme_dark),
+                        R.drawable.ic_day_night,
+                        View.OnClickListener { showDarkThemeMenu(it) })
+                )
+            }
+            AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_choose_theme),
+                        getString(R.string.settings_subtitle_dark_theme_by_battery_saver),
+                        R.drawable.ic_day_night,
+                        View.OnClickListener { showDarkThemeMenu(it) })
+                )
+            }
+            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_choose_theme),
+                        getString(R.string.settings_subtitle_dark_theme_follow_system),
+                        R.drawable.ic_day_night,
+                        View.OnClickListener { showDarkThemeMenu(it) })
+                )
+            }
+        }
+        when (viewModel.debug.value) {
+            true -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_debug_log),
+                        getString(R.string.settings_subtitle_debug_log_on),
+                        R.drawable.round_notifications,
+                        View.OnClickListener { Preferences.debug = false })
+                )
+            }
+            false -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_debug_log),
+                        getString(R.string.settings_subtitle_debug_log_off),
+                        R.drawable.round_notifications,
+                        View.OnClickListener { Preferences.debug = true })
+                )
+            }
+        }
+
+        settings.add(getString(R.string.settings_header_tolerance))
         when (viewModel.tolerance.value) {
             Constants.PREFERENCE_TOLERANCE_LOW -> {
                 settings.add(
@@ -258,72 +336,23 @@ class SettingsFragment : Fragment() {
                 )
             }
         }
-        when (viewModel.notificationType.value) {
-            Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE -> {
+        when (viewModel.batteryLevel.value) {
+            true -> {
                 settings.add(
                     SettingsItem(
-                        getString(R.string.settings_title_notification_type),
-                        getString(R.string.settings_subtitle_notification_type_only_vibrate),
+                        getString(R.string.settings_title_battery_error),
+                        getString(R.string.settings_subtitle_battery_error_on),
                         R.drawable.round_notifications,
-                        View.OnClickListener { showNotificationTypeMenu(it) })
+                        View.OnClickListener { Preferences.useBatteryLevel = false })
                 )
             }
-            Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND -> {
+            false -> {
                 settings.add(
                     SettingsItem(
-                        getString(R.string.settings_title_notification_type),
-                        getString(R.string.settings_subtitle_notification_type_only_sound),
+                        getString(R.string.settings_title_battery_error),
+                        getString(R.string.settings_subtitle_battery_error_off),
                         R.drawable.round_notifications,
-                        View.OnClickListener { showNotificationTypeMenu(it) })
-                )
-            }
-            Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_notification_type),
-                        getString(R.string.settings_subtitle_notification_type_both),
-                        R.drawable.round_notifications,
-                        View.OnClickListener { showNotificationTypeMenu(it) })
-                )
-            }
-        }
-
-        settings.add(getString(R.string.settings_header_style))
-        when (viewModel.darkThemeMode.value) {
-            AppCompatDelegate.MODE_NIGHT_NO -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_choose_theme),
-                        getString(R.string.settings_subtitle_dark_theme_light),
-                        R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
-                )
-            }
-            AppCompatDelegate.MODE_NIGHT_YES -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_choose_theme),
-                        getString(R.string.settings_subtitle_dark_theme_dark),
-                        R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
-                )
-            }
-            AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_choose_theme),
-                        getString(R.string.settings_subtitle_dark_theme_by_battery_saver),
-                        R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
-                )
-            }
-            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_choose_theme),
-                        getString(R.string.settings_subtitle_dark_theme_follow_system),
-                        R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
+                        View.OnClickListener { Preferences.useBatteryLevel = true })
                 )
             }
         }
