@@ -67,4 +67,5 @@
     <string name="settings_subtitle_debug_log_off">Non attivo</string>
     <string name="settings_title_id">ID Dispositivo</string>
     <string name="device_location_unkown">Sconosciuta</string>
+    <string name="battery">Batteria</string>
 </resources>

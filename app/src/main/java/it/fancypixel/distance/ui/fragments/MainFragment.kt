@@ -46,7 +46,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.lang.Exception
 
 
-class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListener {
+class MainFragment : Fragment() {
 
     companion object {
         fun newInstance() = MainFragment()
@@ -68,7 +68,7 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
         viewModel = ViewModelProvider(activity as MainActivity).get(MainViewModel::class.java)
         val binding = DataBindingUtil.inflate<MainFragmentBinding>(inflater, R.layout.main_fragment, container, false)
 
-        subscribeUi(binding, viewModel.darkThemeMode, viewModel.isServiceEnabled, viewModel.nearbyBeacons, viewModel.bluetoothStatus, viewModel.isPermissionGranted, viewModel.deviceLocation, viewModel.debug)
+        subscribeUi(binding, viewModel.darkThemeMode, viewModel.isServiceEnabled, viewModel.nearbyBeacons, viewModel.bluetoothStatus, viewModel.isPermissionGranted, viewModel.debug)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -143,18 +143,17 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
                     Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> getString(R.string.settings_subtitle_device_location_backpack)
                     else -> getString(R.string.device_location_unkown)
                 }
+                val batteryLevel = item.id3.toInt() % 1000
                 injector
-                    .text(R.id.title, "${getString(R.string.settings_title_id)}: ${item.id2}")
-                    .text(R.id.subtitle, position)
+                    .text(R.id.title, "${item.id1}")
+                    .text(R.id.subtitle, "${getString(R.string.battery)}: $batteryLevel%")
+                    .text(R.id.subtitle2, position)
                     .text(R.id.distance, "~%.2fM".format(item.distance))
             }
             .register<String>(R.layout.settings_header_layout) { header, injector ->
                 injector.text(R.id.header, header)
             }
             .attachTo(beacons_list)
-
-        action_change_device_location.check(if (Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET) R.id.button_pocket else R.id.button_desk)
-        action_change_device_location.addOnButtonCheckedListener(this)
     }
 
 
@@ -165,7 +164,6 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
         nearbyBeacons: LiveData<ArrayList<Any>>,
         bluetoothStatus: MutableLiveData<Boolean>,
         isPermissionGranted: MutableLiveData<Boolean>,
-        deviceLocation: LiveData<Int>,
         debug: LiveData<Boolean>
     ) {
         darkThemeMode.observe(viewLifecycleOwner, Observer {
@@ -216,13 +214,6 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
         viewModel.updateBeaconList(event.nearbyBeacon)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onDeviceLocationUpdateEvent(event: DeviceLocationUpdateEvent) {
-        action_change_device_location.removeOnButtonCheckedListener(this)
-        action_change_device_location.check(if (Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET) R.id.button_pocket else R.id.button_desk)
-        action_change_device_location.addOnButtonCheckedListener(this)
-    }
-
     override fun onStart() {
         EventBus.getDefault().register(this)
         super.onStart()
@@ -231,18 +222,5 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
     override fun onStop() {
         super.onStop()
         EventBus.getDefault().unregister(this)
-    }
-
-    override fun onButtonChecked(
-        group: MaterialButtonToggleGroup?,
-        checkedId: Int,
-        isChecked: Boolean
-    ) {
-        if ((checkedId == R.id.button_desk && Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_DESK) || (checkedId == R.id.button_pocket && Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET))
-            return
-
-        activity?.sendBroadcast(Intent(activity, ToggleServiceReceiver::class.java).apply {
-            action = if (checkedId == R.id.button_desk) Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_DESK else Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_POCKET
-        })
     }
 }
