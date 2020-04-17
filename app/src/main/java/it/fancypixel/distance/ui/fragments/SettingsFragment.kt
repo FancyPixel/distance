@@ -229,6 +229,7 @@ class SettingsFragment : Fragment() {
                 )
             }
         }
+
         when (viewModel.darkThemeMode.value) {
             AppCompatDelegate.MODE_NIGHT_NO -> {
                 settings.add(
@@ -264,26 +265,6 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_subtitle_dark_theme_follow_system),
                         R.drawable.ic_day_night,
                         View.OnClickListener { showDarkThemeMenu(it) })
-                )
-            }
-        }
-        when (viewModel.debug.value) {
-            true -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_debug_log),
-                        getString(R.string.settings_subtitle_debug_log_on),
-                        R.drawable.round_notifications,
-                        View.OnClickListener { Preferences.debug = false })
-                )
-            }
-            false -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_debug_log),
-                        getString(R.string.settings_subtitle_debug_log_off),
-                        R.drawable.round_notifications,
-                        View.OnClickListener { Preferences.debug = true })
                 )
             }
         }
@@ -365,6 +346,26 @@ class SettingsFragment : Fragment() {
                 R.drawable.round_business_24,
                 View.OnClickListener { activity?.openURI("https://www.fancypixel.it/") })
         )
+        when (viewModel.debug.value) {
+            true -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_debug_log),
+                        getString(R.string.settings_subtitle_debug_log_on),
+                        R.drawable.round_notifications,
+                        View.OnClickListener { Preferences.debug = false })
+                )
+            }
+            false -> {
+                settings.add(
+                    SettingsItem(
+                        getString(R.string.settings_title_debug_log),
+                        getString(R.string.settings_subtitle_debug_log_off),
+                        R.drawable.round_notifications,
+                        View.OnClickListener { Preferences.debug = true })
+                )
+            }
+        }
 //        settings.add(
 //            SettingsItem(
 //                getString(R.string.settings_title_feedback),

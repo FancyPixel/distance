@@ -109,6 +109,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun restartService() = if (Preferences.isServiceEnabled) startService() else null
 
+    fun updateDeviceLocation() = BeaconService.updateDeviceLocation(getApplication())
+
     fun clearNearbyBeacons() {
         _nearbyBeacons.value = arrayListOf()
         beaconsRegisteredTime.clear()

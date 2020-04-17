@@ -2,6 +2,7 @@ package it.fancypixel.distance.ui.fragments
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -27,9 +28,11 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
+import it.fancypixel.distance.components.events.DeviceLocationUpdateEvent
 import it.fancypixel.distance.components.events.NearbyBeaconEvent
 import it.fancypixel.distance.databinding.MainFragmentBinding
 import it.fancypixel.distance.global.Constants
+import it.fancypixel.distance.services.ToggleServiceReceiver
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.toast
@@ -134,7 +137,7 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
         adapter = SlimAdapter.create()
         adapter
             .register<Beacon>(R.layout.nearby_beacons_item_layout) { item, injector ->
-                val position = when (item.id3.toInt() - item.id3.toInt() % 1000) {
+                val position = when ((item.id3.toInt() - item.id3.toInt() % 1000) / 1000) {
                     Constants.PREFERENCE_DEVICE_LOCATION_DESK -> getString(R.string.settings_subtitle_device_location_desk)
                     Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> getString(R.string.settings_subtitle_device_location_pocket)
                     Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> getString(R.string.settings_subtitle_device_location_backpack)
@@ -142,13 +145,16 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
                 }
                 injector
                     .text(R.id.title, "${getString(R.string.settings_title_id)}: ${item.id2}")
-                    .text(R.id.subtitle, "${getString(R.string.settings_title_device_location)}: $position")
+                    .text(R.id.subtitle, position)
                     .text(R.id.distance, "~%.2fM".format(item.distance))
             }
             .register<String>(R.layout.settings_header_layout) { header, injector ->
                 injector.text(R.id.header, header)
             }
             .attachTo(beacons_list)
+
+        action_change_device_location.check(if (Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET) R.id.button_pocket else R.id.button_desk)
+        action_change_device_location.addOnButtonCheckedListener(this)
     }
 
 
@@ -203,16 +209,18 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
         debug.observe(viewLifecycleOwner, Observer {
             beacons_list.visibility = if (it) View.VISIBLE else View.GONE
         })
-
-        deviceLocation.observe(viewLifecycleOwner, Observer {
-            Log.d("ciao", "codice: $it")
-            action_change_device_location.check(if (it == Constants.PREFERENCE_DEVICE_LOCATION_DESK) R.id.button_desk else R.id.button_pocket)
-        })
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNearbyBeaconEvent(event: NearbyBeaconEvent) {
         viewModel.updateBeaconList(event.nearbyBeacon)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onDeviceLocationUpdateEvent(event: DeviceLocationUpdateEvent) {
+        action_change_device_location.removeOnButtonCheckedListener(this)
+        action_change_device_location.check(if (Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET) R.id.button_pocket else R.id.button_desk)
+        action_change_device_location.addOnButtonCheckedListener(this)
     }
 
     override fun onStart() {
@@ -230,9 +238,11 @@ class MainFragment : Fragment(), MaterialButtonToggleGroup.OnButtonCheckedListen
         checkedId: Int,
         isChecked: Boolean
     ) {
-        when (checkedId) {
-            R.id.button_desk -> Preferences.deviceLocation = Constants.PREFERENCE_DEVICE_LOCATION_DESK
-            R.id.button_pocket -> Preferences.deviceLocation = Constants.PREFERENCE_DEVICE_LOCATION_POCKET
-        }
+        if ((checkedId == R.id.button_desk && Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_DESK) || (checkedId == R.id.button_pocket && Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET))
+            return
+
+        activity?.sendBroadcast(Intent(activity, ToggleServiceReceiver::class.java).apply {
+            action = if (checkedId == R.id.button_desk) Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_DESK else Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_POCKET
+        })
     }
 }

@@ -7,7 +7,7 @@
     <string name="settings_header_main">Impostazioni</string>
     <string name="settings_header_style">Tema</string>
     <string name="settings_header_development">Sviluppatori</string>
-    <string name="settings_title_choose_theme">Scegli tema</string>
+    <string name="settings_title_choose_theme">Tema</string>
     <string name="settings_title_project">Progetto GitHub</string>
     <string name="settings_title_feedback">Assistenza</string>
     <string name="settings_subtitle_feedback">Richiedi supporto o nuove funzionalità.</string>

@@ -7,7 +7,7 @@
     <string name="settings_header_main">Settings</string>
     <string name="settings_header_style">Style</string>
     <string name="settings_header_development">Developer</string>
-    <string name="settings_title_choose_theme">Choose Theme</string>
+    <string name="settings_title_choose_theme">Theme</string>
     <string name="settings_title_company" translatable="false">Fancy Pixel</string>
     <string name="settings_title_project">GitHub Project</string>
     <string name="settings_title_feedback">Contact support</string>

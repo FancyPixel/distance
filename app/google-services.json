@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "821675024226",
+    "firebase_url": "https://distance-5aa0f.firebaseio.com",
+    "project_id": "distance-5aa0f",
+    "storage_bucket": "distance-5aa0f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821675024226:android:c437a05e1ff25f6492d63b",
+        "android_client_info": {
+          "package_name": "it.fancypixel.distance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "821675024226-j5berqh89hqbtnuf7nhbk259j06r4idl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsL68yIpJacdP2GtvPmA6K8-yaZLAaP7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "821675024226-j5berqh89hqbtnuf7nhbk259j06r4idl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

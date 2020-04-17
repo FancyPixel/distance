@@ -64,45 +64,44 @@ class BeaconService : Service(), BeaconConsumer {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val isAdvertisingPossible = BeaconTransmitter.checkTransmissionSupported(this) == BeaconTransmitter.SUPPORTED
 
-        if (intent.action == Constants.ACTION_START_FOREGROUND_SERVICE) {
-            if (isAdvertisingPossible) {
-                startAdvertising()
-            }
+        when (intent.action) {
+            Constants.ACTION_START_FOREGROUND_SERVICE -> {
+                if (isAdvertisingPossible) {
+                    startAdvertising()
+                }
 
-            if (!beaconManager.isBound(this@BeaconService)) {
-                // Optimize the distance calculator
-                BeaconManager.setRssiFilterImplClass(RunningAverageRssiFilter::class.java)
-                RunningAverageRssiFilter.setSampleExpirationMilliseconds(5000L)
+                if (!beaconManager.isBound(this@BeaconService)) {
+                    // Optimize the distance calculator
+                    BeaconManager.setRssiFilterImplClass(RunningAverageRssiFilter::class.java)
+                    RunningAverageRssiFilter.setSampleExpirationMilliseconds(5000L)
 
-                // Start the service in foreground
-                beaconManager.enableForegroundServiceScanning(getServiceNotificationBuilder().build(), NOTIFICATION_ID)
-                beaconManager.setEnableScheduledScanJobs(false)
+                    // Start the service in foreground
+                    beaconManager.enableForegroundServiceScanning(getServiceNotificationBuilder().build(), NOTIFICATION_ID)
+                    beaconManager.setEnableScheduledScanJobs(false)
+                    beaconManager.backgroundMode = true
+
+                    // Update th parser to handle the iBeacon format
+                    beaconManager.beaconParsers.clear()
+                    beaconManager.beaconParsers.add(beaconParser)
+
+                    beaconManager.bind(this@BeaconService)
+                }
 
                 with(NotificationManagerCompat.from(this)) {
                     notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
                 }
-                beaconManager.backgroundMode = true
-
-                // Update th parser to handle the iBeacon format
-                beaconManager.beaconParsers.clear()
-                beaconManager.beaconParsers.add(beaconParser)
-
-                beaconManager.bind(this@BeaconService)
                 Preferences.isServiceEnabled = true
-            }
 
-        } else if (intent.action == Constants.ACTION_STOP_FOREGROUND_SERVICE) {
-            // Unbind the BLE receiver and stop the advertising
-            if (isAdvertisingPossible) {
-                beaconTransmitter.stopAdvertising()
             }
-            beaconManager.unbind(this)
+            Constants.ACTION_STOP_FOREGROUND_SERVICE -> {
+                // Unbind the BLE receiver and stop the advertising
+                if (isAdvertisingPossible) {
+                    beaconTransmitter.stopAdvertising()
+                }
+                beaconManager.unbind(this)
 
-            stopForeground(true)
-            stopSelf()
-        } else if (intent.action == Constants.ACTION_UPDATE_THE_SERVICE_NOTIFICATION) {
-            with(NotificationManagerCompat.from(this)) {
-                notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
+                stopForeground(true)
+                stopSelf()
             }
         }
         return START_NOT_STICKY
@@ -166,7 +165,7 @@ class BeaconService : Service(), BeaconConsumer {
                             else -> 0.0
                         }
 
-                        val transmittingDeviceLocationError = when (beacon.id3.toInt() - beacon.id3.toInt() % 1000) {
+                        val transmittingDeviceLocationError = when ((beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
                             Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 2.0
                             Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 3.0
@@ -175,11 +174,11 @@ class BeaconService : Service(), BeaconConsumer {
 
                         // Tolerance error
                         val toleranceError = when (Preferences.tolerance) {
-                            Constants.PREFERENCE_TOLERANCE_LOW -> -1.0
-                            Constants.PREFERENCE_TOLERANCE_MIN -> -0.5
+                            Constants.PREFERENCE_TOLERANCE_LOW -> -2.0
+                            Constants.PREFERENCE_TOLERANCE_MIN -> -1.0
                             Constants.PREFERENCE_TOLERANCE_DEFAULT -> 0.0
-                            Constants.PREFERENCE_TOLERANCE_HIGH -> 0.5
-                            Constants.PREFERENCE_TOLERANCE_MAX -> 1.0
+                            Constants.PREFERENCE_TOLERANCE_HIGH -> 1.0
+                            Constants.PREFERENCE_TOLERANCE_MAX -> 2.0
                             else -> 0.0
                         }
 
@@ -369,10 +368,10 @@ class BeaconService : Service(), BeaconConsumer {
             mContext.startService(stopIntent)
         }
 
-        fun updateNotification(mContext: Context) {
-            val stopIntent = Intent(mContext, BeaconService::class.java)
-            stopIntent.action = Constants.ACTION_UPDATE_THE_SERVICE_NOTIFICATION
-            mContext.startService(stopIntent)
+        fun updateDeviceLocation(mContext: Context) {
+            if (Preferences.isServiceEnabled) {
+                startBeaconService(mContext)
+            }
         }
 
         private fun createNotificationChannel(mContext: Context) {

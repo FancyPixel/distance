@@ -28,8 +28,8 @@
                 android:layout_alignParentStart="true"
                 android:clickable="true"
                 android:focusable="true"
-                android:layout_marginEnd="2dp"
-                android:layout_marginStart="2dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginStart="10dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:id="@+id/action_back"
                 android:contentDescription="@string/action_go_back" />
@@ -47,6 +47,7 @@
             android:id="@+id/settings_list"
             android:paddingBottom="16dp"
             android:clipToPadding="false"
+            tools:listitem="@layout/settings_item_layout"
             android:layout_below="@+id/toolbar" />
     </RelativeLayout>
 </layout>

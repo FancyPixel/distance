@@ -42,6 +42,9 @@
             <intent-filter>
                 <action android:name="it.fancypixel.distance.intent.action.START_FOREGROUND_SERVICE" />
                 <action android:name="it.fancypixel.distance.intent.action.STOP_FOREGROUND_SERVICE" />
+                <action android:name="it.fancypixel.distance.intent.action.CHANGE_DEVICE_LOCATION_TO_POCKET" />
+                <action android:name="it.fancypixel.distance.intent.action.CHANGE_DEVICE_LOCATION_TO_DESK" />
+                <action android:name="it.fancypixel.distance.intent.action.CHANGE_DEVICE_LOCATION_TO_BACKPACK" />
             </intent-filter>
         </receiver>
 

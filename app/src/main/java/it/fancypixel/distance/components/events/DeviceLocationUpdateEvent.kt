@@ -1,0 +1,3 @@
+package it.fancypixel.distance.components.events
+
+class DeviceLocationUpdateEvent

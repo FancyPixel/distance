@@ -2,8 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp"
     android:id="@+id/item"
     android:gravity="center_vertical"
     android:orientation="horizontal">
@@ -12,8 +14,6 @@
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:gravity="start"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
         android:orientation="vertical">
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
@@ -39,8 +39,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/distance"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
         android:fontFamily="sans-serif-medium"
         android:textSize="22sp"
         android:textAllCaps="true"

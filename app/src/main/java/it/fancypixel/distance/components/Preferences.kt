@@ -6,6 +6,8 @@ import com.chibatching.kotpref.KotprefModel
 import it.fancypixel.distance.global.Constants
 
 object Preferences : KotprefModel() {
+    override val commitAllPropertiesByDefault: Boolean = true
+
     var isServiceEnabled by booleanPref(default = false)
     var darkThemePreference by intPref(default = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) MODE_NIGHT_FOLLOW_SYSTEM else MODE_NIGHT_AUTO_BATTERY)
     var deviceMajor by intPref(default = -1)
