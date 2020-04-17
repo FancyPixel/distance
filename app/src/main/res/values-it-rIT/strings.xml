@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Distance</string>
     <string name="alt_logo">logo</string>
     <string name="error_opening_uri">Errore nell\'apertura del link.</string>
     <string name="profile_image_alt">immagine profile</string>

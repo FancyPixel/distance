@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Distance</string>
     <string name="error_opening_uri">Error opening URL: Link copied to clipboard.</string>
     <string name="alt_logo">logo</string>
     <string name="generic_error">Ops, something went wrong…</string>
