@@ -24,11 +24,19 @@ android {
     }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+            applicationIdSuffix ".debug"
+            versionNameSuffix '-DEV'
+            resValue "string", "app_name", "Distance Dev"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue "string", "app_name", "Distance"
         }
     }
+
     compileOptions {
         targetCompatibility = "8"
         sourceCompatibility = "8"
