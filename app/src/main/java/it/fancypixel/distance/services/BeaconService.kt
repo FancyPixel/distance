@@ -12,16 +12,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.AudioManager
-import android.media.RingtoneManager
 import android.media.ToneGenerator
-import android.net.Uri
 import android.os.*
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import it.fancypixel.distance.BuildConfig
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.components.events.NearbyBeaconEvent
@@ -34,7 +36,7 @@ import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import org.greenrobot.eventbus.EventBus
 
 
-class BeaconService : Service(), BeaconConsumer {
+class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -44,6 +46,9 @@ class BeaconService : Service(), BeaconConsumer {
     private val beaconManager by lazy { BeaconManager.getInstanceForApplication(this).apply { isRegionStatePersistenceEnabled = false } }
     private val beaconParser by lazy { BeaconParser().setBeaconLayout(BEACON_LAYOUT) }
     private val beaconTransmitter by lazy { BeaconTransmitter(this, beaconParser) }
+    private val isAdvertisingPossible by lazy { !(BluetoothAdapter.getDefaultAdapter().isEnabled && BeaconTransmitter.checkTransmissionSupported(application) != BeaconTransmitter.SUPPORTED) }
+
+    private val sensorManager by lazy { getSystemService(SENSOR_SERVICE) as SensorManager }
 
     private val bluetoothBroadcastReceiver by lazy {
         object : BroadcastReceiver() {
@@ -56,14 +61,13 @@ class BeaconService : Service(), BeaconConsumer {
     }
 
     private var hasBeenNotified = false
+    private var hasBeenStronglyNotified = false
 
     // Get instance of Vibrator from current Context
     private val v: Vibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     private val ringtone by lazy { ToneGenerator(AudioManager.STREAM_NOTIFICATION, 500) }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        val isAdvertisingPossible = BeaconTransmitter.checkTransmissionSupported(this) == BeaconTransmitter.SUPPORTED
-
         when (intent.action) {
             Constants.ACTION_START_FOREGROUND_SERVICE -> {
                 if (isAdvertisingPossible) {
@@ -86,6 +90,10 @@ class BeaconService : Service(), BeaconConsumer {
 
                     beaconManager.bind(this@BeaconService)
                 }
+
+                // Listen to proximity sensor changes
+                sensorManager.unregisterListener(this)
+                sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_NORMAL)
 
                 with(NotificationManagerCompat.from(this)) {
                     notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
@@ -113,7 +121,7 @@ class BeaconService : Service(), BeaconConsumer {
 
         val beacon = Beacon.Builder()
             .setId1(BEACON_ID)
-            .setId2(Preferences.deviceMajor.toString())
+            .setId2("$BEACON_MAJOR".padStart(5, '0'))
             .setId3("${Preferences.deviceLocation}${"%03d".format(batLevel)}")
             .setManufacturer(0x004c)
             .setTxPower(-59)
@@ -124,7 +132,7 @@ class BeaconService : Service(), BeaconConsumer {
         beaconTransmitter.startAdvertising(beacon, object : AdvertiseCallback() {
             override fun onStartFailure(errorCode: Int) {
                 toast(getString(R.string.generic_error))
-                Preferences.isServiceEnabled = false
+                stopBeaconService(this@BeaconService)
             }
             override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
             }
@@ -153,9 +161,9 @@ class BeaconService : Service(), BeaconConsumer {
                 beaconManager.removeAllRangeNotifiers()
                 beaconManager.addRangeNotifier { beacons, _ ->
                     var isSomeoneNear = false
+                    var isSomeoneVeryNear = false
                     for (beacon in beacons) {
                         Log.d(TAG, "I see a beacon at ${beacon.distance} meters away with a ${beacon.id3.toInt() % 1000}% battery.")
-                        EventBus.getDefault().post(NearbyBeaconEvent(beacon))
 
                         // Device location error
                         val deviceLocationError = when (Preferences.deviceLocation) {
@@ -187,62 +195,36 @@ class BeaconService : Service(), BeaconConsumer {
                         val batteryLevelError = (100 - level) / 100 * 10.0
 
                         val calculatedMinDistance = 2.0 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError
-//                        toast("Distance: $deviceLocationError + $toleranceError + $batteryLevelError = $calculatedMinDistance")
 
-                        isSomeoneNear = isSomeoneNear || beacon.distance < calculatedMinDistance
+                        if (beacon.distance < calculatedMinDistance) {
+                            EventBus.getDefault().post(NearbyBeaconEvent(beacon))
+                        }
+
+                        isSomeoneNear = beacon.distance < calculatedMinDistance
+                        isSomeoneVeryNear = beacon.distance < calculatedMinDistance / 2
                     }
 
-                    notifyIf(isSomeoneNear)
+                    notifyIf(isSomeoneNear, isSomeoneVeryNear)
                 }
             }
         })
 
         try {
-            beaconManager.startMonitoringBeaconsInRegion(Region(REGION_TAG, Identifier.parse(BEACON_ID), null, null))
+            beaconManager.startMonitoringBeaconsInRegion(Region(REGION_TAG, null, Identifier.parse("$BEACON_MAJOR"), null))
         } catch (e: RemoteException) {
             toast(getString(R.string.generic_error))
             stopBeaconService(this)
         }
     }
 
-    private fun notifyIf(isSomeoneNear: Boolean) {
-        if (isSomeoneNear) {
+    private fun notifyIf(isSomeoneNear: Boolean, isSomeoneVeryNear: Boolean) {
+        if (isSomeoneVeryNear) {
+            if (!hasBeenStronglyNotified) {
+                notify(true)
+            }
+        } else if (isSomeoneNear) {
             if (!hasBeenNotified) {
-                if (!isInteractive()) {
-                    wakeUpThePhone()
-                }
-                hasBeenNotified = true
-
-                if (Preferences.notificationType != Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE) {
-                    try {
-                        ringtone.stopTone()
-                        ringtone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 500)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-
-                if (Preferences.notificationType != Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND) {
-                    val pattern = longArrayOf(0, 100, 100, 100, 100, 100, 3000)
-                    if (Build.VERSION.SDK_INT >= 26) {
-                        v.vibrate(
-                            VibrationEffect.createWaveform(
-                                pattern,
-                                VibrationEffect.DEFAULT_AMPLITUDE
-                            )
-                        )
-                    } else {
-                        v.vibrate(pattern, -1)
-                    }
-                }
-
-                GlobalScope.launch(Dispatchers.IO) {
-                    delay(3000)
-                    withContext(Dispatchers.Main) {
-                        hasBeenNotified = false
-                    }
-                }
-
+                notify(false)
             }
         } else {
             v.cancel()
@@ -250,6 +232,52 @@ class BeaconService : Service(), BeaconConsumer {
         }
 
 
+    }
+
+    private fun notify(strong: Boolean) {
+        if (!isInteractive()) {
+            wakeUpThePhone()
+        }
+
+        if (strong) {
+            hasBeenStronglyNotified = true
+        } else {
+            hasBeenNotified = true
+        }
+
+        if (Preferences.notificationType != Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE) {
+            try {
+                ringtone.stopTone()
+                ringtone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 500)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        if (Preferences.notificationType != Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND) {
+            val pattern =  if (strong) longArrayOf(0, 400, 100, 400, 3000) else longArrayOf(0, 100, 100, 100, 100, 100, 3000)
+            if (Build.VERSION.SDK_INT >= 26) {
+                v.vibrate(
+                    VibrationEffect.createWaveform(
+                        pattern,
+                        if (strong) 255 else VibrationEffect.DEFAULT_AMPLITUDE
+                    )
+                )
+            } else {
+                v.vibrate(pattern, -1)
+            }
+        }
+
+        GlobalScope.launch(Dispatchers.IO) {
+            delay(if (strong) 3000 else 10000)
+            withContext(Dispatchers.Main) {
+                if (strong) {
+                    hasBeenStronglyNotified = false
+                } else {
+                    hasBeenNotified = false
+                }
+            }
+        }
     }
 
     private fun isInteractive(): Boolean {
@@ -277,36 +305,26 @@ class BeaconService : Service(), BeaconConsumer {
         // Handle the notification channel
         createNotificationChannel(this@BeaconService)
 
-        var title = getString(R.string.notification_title)
-        var subtitle = getString(R.string.notification_message)
+        val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.ongoing_notification_channel_id))
+            .setSmallIcon(R.drawable.ic_stat_person)
+            .setContentTitle(getString(R.string.notification_title))
+            .setContentText(getString(R.string.notification_message))
+            .setColor(ContextCompat.getColor(this@BeaconService, R.color.colorAccent))
+            .setAutoCancel(false)
+            .setSound(null)
+            .setVibrate(null)
+            .setOngoing(true)
+            .setOnlyAlertOnce(false)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
 
         with(BluetoothAdapter.getDefaultAdapter()) {
             if (!isEnabled) {
-                title = this@BeaconService.getString(R.string.notification_title_with_ble_off)
-                subtitle = this@BeaconService.getString(R.string.notification_message_with_ble_off)
+                builder.setContentTitle(this@BeaconService.getString(R.string.notification_title_with_ble_off))
+                builder.setContentText(this@BeaconService.getString(R.string.notification_message_with_ble_off))
+//                builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+//                builder.setVibrate(longArrayOf(0, 1000, 1000, 1000, 1000))
             }
         }
-
-        val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.ongoing_notification_channel_id))
-            .setSmallIcon(R.drawable.ic_stat_person)
-            .setContentTitle(title)
-            .setContentText(subtitle)
-            .setColor(ContextCompat.getColor(this@BeaconService, R.color.colorAccent))
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-
-        // Action to change the position of the device
-        val insidePocket = Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_POCKET
-        val changeDevicePositionIntent: PendingIntent = PendingIntent.getBroadcast(this@BeaconService, 2, Intent(this@BeaconService, ToggleServiceReceiver::class.java).apply {
-            action = if (insidePocket) Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_DESK else Constants.ACTION_CHANGE_DEVICE_LOCATION_TO_POCKET
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                putExtra(EXTRA_NOTIFICATION_ID, 0)
-            }
-        }, 0)
-
-        builder.addAction(R.drawable.ic_stat_check, if (insidePocket) getString(R.string.action_move_to_desk) else getString(R.string.action_move_to_pocket), changeDevicePositionIntent)
 
         // Action to disable the app
         val actionIntent: PendingIntent = PendingIntent.getBroadcast(this@BeaconService, 1, Intent(this@BeaconService, ToggleServiceReceiver::class.java).apply {
@@ -332,6 +350,23 @@ class BeaconService : Service(), BeaconConsumer {
         }
     }
 
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
+            if (event.values[0] == event.sensor.maximumRange) {
+                Preferences.deviceLocation = Constants.PREFERENCE_DEVICE_LOCATION_DESK
+            } else {
+                Preferences.deviceLocation = Constants.PREFERENCE_DEVICE_LOCATION_POCKET
+            }
+
+            if (isAdvertisingPossible && Preferences.isServiceEnabled) {
+                startAdvertising()
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         val intentFiler = IntentFilter().apply {
@@ -345,6 +380,7 @@ class BeaconService : Service(), BeaconConsumer {
         with(NotificationManagerCompat.from(this)) {
             cancel(NOTIFICATION_ID)
         }
+        sensorManager.unregisterListener(this)
         unregisterReceiver(bluetoothBroadcastReceiver)
         ringtone.release()
         super.onDestroy()
@@ -354,6 +390,7 @@ class BeaconService : Service(), BeaconConsumer {
         private const val NOTIFICATION_ID = 364
         const val REGION_TAG = "REGION_NEAR"
         const val BEACON_ID = "A2B2265F-77F6-4C6A-82ED-297B366FC684"
+        const val BEACON_MAJOR = 12345
         const val BEACON_LAYOUT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"
 
         fun startBeaconService(mContext: Context) {

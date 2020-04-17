@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Context.BATTERY_SERVICE
 import android.os.BatteryManager
+import android.provider.Settings
+import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.core.content.ContextCompat.getSystemService
@@ -20,6 +22,9 @@ import it.fancypixel.distance.utils.toast
 import kotlinx.coroutines.*
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconTransmitter
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -27,7 +32,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // Settings
     var darkThemeMode: LiveData<Int> = Preferences.asLiveData(Preferences::darkThemePreference)
     var tolerance: LiveData<Int> = Preferences.asLiveData(Preferences::tolerance)
-    var deviceLocation: LiveData<Int> = Preferences.asLiveData(Preferences::deviceLocation)
     var debug: LiveData<Boolean> = Preferences.asLiveData(Preferences::debug)
     var notificationType: LiveData<Int> = Preferences.asLiveData(Preferences::notificationType)
     var batteryLevel: LiveData<Boolean> = Preferences.asLiveData(Preferences::useBatteryLevel)
@@ -94,8 +98,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun startService() {
-        if (Preferences.deviceMajor < 0) {
-            Preferences.deviceMajor = (0 .. 65535).random()
+        if (Preferences.deviceUUID == "") {
+            Preferences.deviceUUID = UUID.randomUUID().toString()
             // TODO: send to backend to check uniqueness
         }
         BeaconService.startBeaconService(getApplication())

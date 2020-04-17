@@ -195,7 +195,7 @@ class SettingsFragment : Fragment() {
         settings.add(
             SettingsItem(
                 getString(R.string.settings_title_id),
-                "${Preferences.deviceMajor}".padStart(5, '0'),
+                "${Preferences.deviceUUID}".padStart(5, '0'),
                 R.drawable.round_notifications,
                 null)
             )
