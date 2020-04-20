@@ -211,6 +211,12 @@ class MainFragment : Fragment() {
                     viewModel.nearbyBeacons.value?.size ?: 0
                 )
             }
+
+            if (it) {
+                ripple.startRippleAnimation()
+            } else {
+                ripple.stopRippleAnimation()
+            }
         })
 
         isPermissionGranted.observe(viewLifecycleOwner, Observer {

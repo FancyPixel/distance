@@ -101,8 +101,8 @@ class OnboardingFragment : Fragment() {
 
         action_finish.setOnClickListener {
             Preferences.showIntro = false
-            it.findNavController()
-                .navigate(R.id.action_onboardingFragment_to_mainFragment)
+            viewModel.startService()
+            it.findNavController().navigate(R.id.action_onboardingFragment_to_mainFragment)
         }
     }
 

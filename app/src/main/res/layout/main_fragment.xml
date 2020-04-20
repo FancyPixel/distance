@@ -86,43 +86,136 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:gravity="center_horizontal"
                         android:orientation="vertical">
-                        <LinearLayout
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:paddingTop="16dp"
-                            android:paddingBottom="16dp"
-                            android:paddingLeft="24dp"
-                            android:paddingRight="24dp"
-                            android:orientation="horizontal"
                             android:clickable="true"
                             android:focusable="true"
-                            android:onClick="@{(v) -> viewModel.toggleService(v)}"
-                            android:background="?attr/selectableItemBackground"
-                            android:gravity="center_vertical">
-                            <androidx.appcompat.widget.AppCompatTextView
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content"
-                                android:text="@string/title_enabled"
-                                android:textSize="18sp"
-                                android:textAppearance="@style/TextAppearance.AppCompat.Button"
-                                android:textColor="@color/colorPrimaryText"
-                                android:textAllCaps="false" />
-                            <com.google.android.material.switchmaterial.SwitchMaterial
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/action_toggle"
-                                app:trackTint="@drawable/switch_track"
-                                app:thumbTint="@drawable/switch_thumb"
-                                android:onClick="@{(v) -> viewModel.toggleService(v)}"
-                                android:checked="@{viewModel.isServiceEnabled()}"/>
-                        </LinearLayout>
+                            app:cardCornerRadius="0dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="@{viewModel.isServiceEnabled() ? @color/colorAccent : @color/disabledButtonBackground}"
+                            android:background="@android:color/transparent"
+                            android:onClick="@{(v) -> viewModel.toggleService(v)}">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:paddingTop="16dp"
+                                android:paddingBottom="16dp"
+                                android:paddingLeft="24dp"
+                                android:paddingRight="24dp"
+                                android:gravity="center_vertical">
+                                <androidx.appcompat.widget.AppCompatTextView
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/title_enabled"
+                                    android:textSize="18sp"
+                                    android:duplicateParentState="true"
+                                    android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                                    android:textColor="@{viewModel.isServiceEnabled() ? @android:color/white : @color/colorPrimaryText}"
+                                    android:textAllCaps="false" />
+                                <com.google.android.material.switchmaterial.SwitchMaterial
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/action_toggle"
+                                    app:trackTint="@drawable/switch_track"
+                                    app:thumbTint="@drawable/switch_thumb"
+                                    android:onClick="@{(v) -> viewModel.toggleService(v)}"
+                                    android:checked="@{viewModel.isServiceEnabled()}"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
+                            android:visibility="@{viewModel.isServiceEnabled() ? View.GONE : View.INVISIBLE, default=visible}"
                             android:background="@color/colorSecondaryText"
                             android:alpha="0.15"/>
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:layout_marginBottom="68dp"
+                            android:gravity="center_horizontal">
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:alpha="0.2"
+                                android:layout_above="@+id/description">
+                                <androidx.appcompat.widget.AppCompatImageView
+                                    android:layout_width="150dp"
+                                    android:layout_height="150dp"
+                                    android:src="@drawable/background_circle"
+                                    android:layout_centerInParent="true"/>
+                                <androidx.appcompat.widget.AppCompatImageView
+                                    android:layout_width="280dp"
+                                    android:layout_height="280dp"
+                                    android:src="@drawable/background_circle"
+                                    android:layout_centerInParent="true"/>
+                                <androidx.appcompat.widget.AppCompatImageView
+                                    android:layout_width="450dp"
+                                    android:layout_height="450dp"
+                                    android:src="@drawable/background_circle"
+                                    android:layout_centerInParent="true"/>
+                            </RelativeLayout>
+                            <com.skyfishjy.library.RippleBackground
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:id="@+id/ripple"
+                                app:rb_color="@color/colorAccent_op30"
+                                app:rb_radius="32dp"
+                                app:rb_rippleAmount="3"
+                                android:layout_above="@+id/description"
+                                app:rb_duration="8000"
+                                app:rb_scale="6">
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="84dp"
+                                    android:layout_height="84dp"
+                                    app:cardElevation="2dp"
+                                    app:cardCornerRadius="42dp"
+                                    android:layout_centerInParent="true"
+                                    app:cardBackgroundColor="@color/colorPrimary">
+                                    <androidx.appcompat.widget.AppCompatImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:padding="8dp"
+                                        android:src="@drawable/ic_splash_logo" />
+                                </com.google.android.material.card.MaterialCardView>
+                            </com.skyfishjy.library.RippleBackground>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentBottom="true"
+                                android:gravity="center_horizontal"
+                                android:paddingLeft="32dp"
+                                android:paddingRight="32dp"
+                                android:paddingBottom="24dp"
+                                android:id="@+id/description"
+                                android:orientation="vertical">
+                                <androidx.appcompat.widget.AppCompatTextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/colorPrimaryText"
+                                    android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                                    android:textSize="22sp"
+                                    android:text="Monitoraggio in corso"
+                                    android:id="@+id/title"/>
+                                <androidx.appcompat.widget.AppCompatTextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                                    android:textColor="@color/colorPrimaryText"
+                                    android:alpha="0.8"
+                                    android:textSize="16sp"
+                                    android:lineHeight="18dp"
+                                    android:id="@+id/subtitle"
+                                    android:justificationMode="inter_word"
+                                    android:text="Stiamo monitorando i dispositivi delle vicinanze. Nel caso in cui la distanza sia troppo ridotta avvertiremo entrambi." />
+                            </LinearLayout>
+                        </RelativeLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
@@ -204,7 +297,7 @@
                     app:shapeAppearance="@style/ShapeAppearanceOverlay.MaterialCardView.Cut"
                     android:id="@+id/bottom_sheet"
                     android:orientation="vertical"
-                    android:background="@color/colorPrimary"
+                    app:cardBackgroundColor="@color/colorPrimary"
                     android:visibility="@{isDebugModeEnabled ? View.VISIBLE : View.GONE, default=visible}"
                     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
                     <LinearLayout

@@ -97,7 +97,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun startService() {
+    fun startService() {
         if (Preferences.deviceUUID == "") {
             Preferences.deviceUUID = UUID.randomUUID().toString()
             // TODO: send to backend to check uniqueness
