@@ -15,6 +15,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import com.google.android.material.transition.MaterialFade
 import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
 import com.skydoves.powermenu.MenuAnimation
@@ -41,8 +42,8 @@ class SettingsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enterTransition = MaterialFadeThrough.create(requireContext())
-        exitTransition = MaterialFadeThrough.create(requireContext())
+        enterTransition = MaterialSharedAxis.create(MaterialSharedAxis.X, true)
+        returnTransition = MaterialSharedAxis.create(MaterialSharedAxis.X, false)
     }
 
     private lateinit var viewModel: MainViewModel
@@ -70,7 +71,7 @@ class SettingsFragment : Fragment() {
         }
 
         settings_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
-            activity!!,
+            requireActivity(),
             androidx.recyclerview.widget.LinearLayoutManager.VERTICAL,
             false
         )
@@ -85,7 +86,7 @@ class SettingsFragment : Fragment() {
                     .visibility(R.id.error_indicator, if (item.hasError) View.VISIBLE else View.GONE)
 
                 item.iconRes?.let {
-                    injector.image(R.id.icon, ContextCompat.getDrawable(activity!!, it))
+                    injector.image(R.id.icon, ContextCompat.getDrawable(requireActivity(), it))
                 }
             }
             .register<String>(R.layout.settings_header_layout) { header, injector ->
@@ -107,7 +108,7 @@ class SettingsFragment : Fragment() {
             .setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
                 Preferences.tolerance = item.tag as Int
             }
-            .build().showAsDropDown(view, 20.toPixel(activity!!), (-10).toPixel(activity!!))
+            .build().showAsDropDown(view, 20.toPixel(requireActivity()), (-10).toPixel(requireActivity()))
     }
 
     private fun showNotificationTypeMenu(view: View) {
@@ -119,7 +120,7 @@ class SettingsFragment : Fragment() {
             .setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
                 Preferences.notificationType = item.tag as Int
             }
-            .build().showAsDropDown(view, 20.toPixel(activity!!), (-10).toPixel(activity!!))
+            .build().showAsDropDown(view, 20.toPixel(requireActivity()), (-10).toPixel(requireActivity()))
     }
 
     private fun showDarkThemeMenu(view: View) {
@@ -138,7 +139,7 @@ class SettingsFragment : Fragment() {
             Preferences.darkThemePreference = item.tag as Int
         }
 
-        powerMenuBuilder.build().showAsDropDown(view, 20.toPixel(activity!!), (-10).toPixel(activity!!))
+        powerMenuBuilder.build().showAsDropDown(view, 20.toPixel(requireActivity()), (-10).toPixel(requireActivity()))
     }
 
     private fun getStyledPowerMenuBuilder(context: Context?) = PowerMenu.Builder(context)
@@ -149,10 +150,10 @@ class SettingsFragment : Fragment() {
         .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
         .setLifecycleOwner(viewLifecycleOwner)
         .setBackgroundAlpha(0f)
-        .setMenuColor(ContextCompat.getColor(activity!!, R.color.colorPrimary))
-        .setTextColor(ContextCompat.getColor(activity!!, R.color.colorPrimaryText))
-        .setSelectedMenuColor(ContextCompat.getColor(activity!!, R.color.colorPrimary))
-        .setSelectedTextColor(ContextCompat.getColor(activity!!, R.color.colorAccent))
+        .setMenuColor(ContextCompat.getColor(requireActivity(), R.color.colorPrimary))
+        .setTextColor(ContextCompat.getColor(requireActivity(), R.color.colorPrimaryText))
+        .setSelectedMenuColor(ContextCompat.getColor(requireActivity(), R.color.colorPrimary))
+        .setSelectedTextColor(ContextCompat.getColor(requireActivity(), R.color.colorAccent))
 
     private fun subscribeUi(
         settings: MutableLiveData<ArrayList<Any>>,
@@ -195,7 +196,7 @@ class SettingsFragment : Fragment() {
         settings.add(
             SettingsItem(
                 getString(R.string.settings_title_id),
-                "${Preferences.deviceUUID}".padStart(5, '0'),
+                Preferences.deviceUUID.padStart(5, '0'),
                 R.drawable.round_notifications,
                 null)
             )

@@ -8,8 +8,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
+import androidx.core.view.marginTop
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
@@ -17,8 +20,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
 import com.karumi.dexter.Dexter
@@ -35,6 +40,7 @@ import it.fancypixel.distance.global.Constants
 import it.fancypixel.distance.services.ToggleServiceReceiver
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
+import it.fancypixel.distance.utils.toPixel
 import it.fancypixel.distance.utils.toast
 import kotlinx.android.synthetic.main.main_fragment.*
 import net.idik.lib.slimadapter.SlimAdapter
@@ -58,6 +64,8 @@ class MainFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        enterTransition = MaterialSharedAxis.create(MaterialSharedAxis.X, true)
+        reenterTransition = MaterialSharedAxis.create(MaterialSharedAxis.X, false)
     }
 
     override fun onCreateView(
@@ -83,7 +91,7 @@ class MainFragment : Fragment() {
         }
 
         action_ble_error.setOnClickListener {
-            MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_App_MaterialAlertDialog)
+            MaterialAlertDialogBuilder(requireActivity(), R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setCancelable(true)
                 .setTitle(getString(R.string.advertising_not_available_title))
                 .setMessage(resources.getString(R.string.advertising_not_possible_message))
@@ -93,16 +101,8 @@ class MainFragment : Fragment() {
                 .show()
         }
 
-        action_turn_on_bluetooth.setOnClickListener {
-            try {
-                BluetoothAdapter.getDefaultAdapter().enable()
-            } catch (ex: Exception) {
-                activity?.toast(getString(R.string.generic_error))
-            }
-        }
-
         action_request_permission.setOnClickListener {
-            Dexter.withContext(activity!!)
+            Dexter.withContext(requireActivity())
                 .withPermissions(
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ).withListener(object: MultiplePermissionsListener {
@@ -129,10 +129,12 @@ class MainFragment : Fragment() {
         }
 
         beacons_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
-            activity!!,
+            requireActivity(),
             androidx.recyclerview.widget.LinearLayoutManager.VERTICAL,
             false
         )
+        beacons_list.isNestedScrollingEnabled = true
+        beacons_list.isVerticalScrollBarEnabled = false
 
         adapter = SlimAdapter.create()
         adapter
@@ -154,6 +156,21 @@ class MainFragment : Fragment() {
                 injector.text(R.id.header, header)
             }
             .attachTo(beacons_list)
+
+        BottomSheetBehavior.from(bottom_sheet).addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    bottom_sheet.shapeAppearanceModel =
+                        bottom_sheet.shapeAppearanceModel.withCornerSize(0f)
+                } else {
+                    bottom_sheet.shapeAppearanceModel = ShapeAppearanceModel.builder(requireContext(), R.style.ShapeAppearanceOverlay_MaterialCardView_Cut, 0).build()
+                }
+            }
+
+        })
     }
 
 
@@ -196,16 +213,13 @@ class MainFragment : Fragment() {
             }
         })
 
-        bluetoothStatus.observe(viewLifecycleOwner, Observer {
-            binding.isBluetoothDisabled = it
-        })
-
         isPermissionGranted.observe(viewLifecycleOwner, Observer {
             binding.isPermissionsGranted = it
         })
 
         debug.observe(viewLifecycleOwner, Observer {
             beacons_list.visibility = if (it) View.VISIBLE else View.GONE
+            binding.isDebugModeEnabled = it
         })
     }
 

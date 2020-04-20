@@ -10,6 +10,8 @@
     <color name="black_op50">#80000000</color>
     <color name="black_op60">#99000000</color>
     <color name="black_op80">#CC000000</color>
+    <color name="white_op30">#4DFFFFFF</color>
+    <color name="white_op60">#99FFFFFF</color>
     <color name="colorPrimaryText">#000000</color>
     <color name="colorSecondaryText">#99000000</color>
     <color name="errorColorBackground">#FBD8D8</color>

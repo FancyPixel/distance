@@ -8,7 +8,7 @@
             name="isAdvertisingPossible"
             type="Boolean" />
         <variable
-            name="isBluetoothDisabled"
+            name="isDebugModeEnabled"
             type="Boolean" />
         <variable
             name="isPermissionsGranted"
@@ -19,257 +19,219 @@
         <import type="android.view.View"/>
     </data>
 
-    <RelativeLayout
-        android:id="@+id/main"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorPrimaryDark">
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:background="@color/colorPrimary"
-            android:elevation="4dp"
-            android:id="@+id/toolbar">
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:padding="10dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
-                android:src="@drawable/round_error"
-                android:tint="@color/errorColorText"
-                android:clickable="true"
-                android:focusable="true"
-                android:visibility="@{isAdvertisingPossible ? View.GONE : View.VISIBLE, default=gone}"
-                android:id="@+id/action_ble_error"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_centerVertical="true"
-                android:layout_alignParentStart="true"
-                android:contentDescription="@string/action_settings"/>
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="@string/app_name"
-                android:textColor="@color/colorPrimaryText"
-                android:gravity="center"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                tools:ignore="RelativeOverlap" />
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:padding="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/round_short_text_white_36"
-                android:tint="@color/colorPrimaryText"
-                android:clickable="true"
-                android:focusable="true"
-                android:scaleX="-1"
-                android:id="@+id/action_settings"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true"
-                android:contentDescription="@string/action_settings"/>
-        </RelativeLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/toolbar"
-            android:orientation="vertical">
+            android:background="?attr/colorPrimaryDark">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:background="@color/colorPrimary"
+                android:elevation="4dp"
+                android:id="@+id/toolbar">
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="10dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/round_error"
+                    android:tint="@color/errorColorText"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="@{isAdvertisingPossible ? View.GONE : View.VISIBLE, default=gone}"
+                    android:id="@+id/action_ble_error"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"
+                    android:contentDescription="@string/action_settings"/>
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/app_name"
+                    android:textColor="@color/colorPrimaryText"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                    tools:ignore="RelativeOverlap" />
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/round_short_text_white_36"
+                    android:tint="@color/colorPrimaryText"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:scaleX="-1"
+                    android:id="@+id/action_settings"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:contentDescription="@string/action_settings"/>
+            </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/toolbar"
+                android:orientation="vertical">
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="0dp"
+                    android:elevation="2dp"
+                    app:cardBackgroundColor="@color/colorPrimaryDark">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="16dp"
+                            android:paddingBottom="16dp"
+                            android:paddingLeft="24dp"
+                            android:paddingRight="24dp"
+                            android:orientation="horizontal"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:onClick="@{(v) -> viewModel.toggleService(v)}"
+                            android:background="?attr/selectableItemBackground"
+                            android:gravity="center_vertical">
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:text="@string/title_enabled"
+                                android:textSize="18sp"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                                android:textColor="@color/colorPrimaryText"
+                                android:textAllCaps="false" />
+                            <com.google.android.material.switchmaterial.SwitchMaterial
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/action_toggle"
+                                app:trackTint="@drawable/switch_track"
+                                app:thumbTint="@drawable/switch_thumb"
+                                android:onClick="@{(v) -> viewModel.toggleService(v)}"
+                                android:checked="@{viewModel.isServiceEnabled()}"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/colorSecondaryText"
+                            android:alpha="0.15"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/toolbar"
                 app:cardCornerRadius="0dp"
-                android:elevation="2dp"
+                android:visibility="@{isPermissionsGranted ? View.GONE : View.VISIBLE, default=gone}"
+                app:cardElevation="0dp"
                 app:cardBackgroundColor="@color/colorPrimaryDark">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    app:cardCornerRadius="9dp"
+                    app:cardBackgroundColor="@color/colorPrimary">
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingTop="16dp"
-                        android:paddingBottom="16dp"
+                        android:gravity="center"
                         android:paddingLeft="24dp"
                         android:paddingRight="24dp"
-                        android:orientation="horizontal"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:onClick="@{(v) -> viewModel.toggleService(v)}"
-                        android:background="?attr/selectableItemBackground"
-                        android:gravity="center_vertical">
+                        android:paddingTop="32dp"
+                        android:paddingBottom="16dp"
+                        android:orientation="vertical"
+                        android:layout_gravity="center">
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/round_location_on"
+                            android:tint="@color/colorAccent" />
                         <androidx.appcompat.widget.AppCompatTextView
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:text="@string/title_enabled"
-                            android:textSize="18sp"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Button"
-                            android:textColor="@color/colorPrimaryText"
-                            android:textAllCaps="false" />
-                        <com.google.android.material.switchmaterial.SwitchMaterial
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/action_toggle"
-                            app:trackTint="@drawable/switch_track"
-                            app:thumbTint="@drawable/switch_thumb"
-                            android:onClick="@{(v) -> viewModel.toggleService(v)}"
-                            android:checked="@{viewModel.isServiceEnabled()}"/>
+                            android:text="@string/request_permission_title"
+                            android:gravity="center"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="4dp"
+                            android:textAllCaps="false"
+                            android:textColor="@color/colorPrimaryText"
+                            app:textAllCaps="false"
+                            android:textSize="20sp"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Button"/>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/request_permission_message"
+                            android:gravity="center"
+                            android:textSize="17sp"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:text="@string/action_grant_permission"
+                            android:layout_marginTop="24dp"
+                            android:layout_marginBottom="0dp"
+                            android:id="@+id/action_request_permission"
+                            app:rippleColor="@color/colorPrimaryDark"
+                            android:textColor="@color/colorAccent" />
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
+
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:id="@+id/main"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/toolbar">
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:behavior_hideable="false"
+                    app:behavior_peekHeight="68dp"
+                    app:cardElevation="8dp"
+                    app:cardCornerRadius="12dp"
+                    app:shapeAppearance="@style/ShapeAppearanceOverlay.MaterialCardView.Cut"
+                    android:id="@+id/bottom_sheet"
+                    android:orientation="vertical"
+                    android:background="@color/colorPrimary"
+                    android:visibility="@{isDebugModeEnabled ? View.VISIBLE : View.GONE, default=visible}"
+                    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/colorSecondaryText"
-                        android:alpha="0.15"/>
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:textAppearance="@style/AppTheme.HeaderTextAppearance"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingTop="24dp"
-                        android:paddingBottom="16dp"
-                        android:paddingLeft="24dp"
-                        android:paddingRight="24dp"
-                        android:gravity="center"
-                        android:text="@string/enabled_the_service_message"
-                        android:textColor="@color/colorAccent"
-                        android:id="@+id/header"/>
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:id="@+id/beacons_list"
-                        android:paddingBottom="16dp"
-                        tools:listitem="@layout/nearby_beacons_item_layout"
-                        android:clipToPadding="false" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/toolbar"
-            app:cardCornerRadius="0dp"
-            android:visibility="@{isBluetoothDisabled ? View.VISIBLE : View.GONE, default=gone}"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/colorPrimaryDark">
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                app:cardCornerRadius="9dp"
-                app:cardBackgroundColor="@color/colorPrimary">
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingLeft="24dp"
-                    android:paddingRight="24dp"
-                    android:paddingTop="32dp"
-                    android:paddingBottom="16dp"
-                    android:orientation="vertical"
-                    android:layout_gravity="center">
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/round_bluetooth"
-                        android:tint="@color/colorAccent" />
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/bluetooth_disabled_title"
-                        android:gravity="center"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="4dp"
-                        android:textAllCaps="false"
-                        android:textColor="@color/colorPrimaryText"
-                        app:textAllCaps="false"
-                        android:textSize="20sp"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Button"/>
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/bluetooth_disabled_message"
-                        android:gravity="center"
-                        android:textSize="17sp"
-                        android:textColor="@color/colorPrimaryText"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:text="@string/action_turn_on_bluetooth"
-                        android:layout_marginTop="24dp"
-                        android:layout_marginBottom="0dp"
-                        android:id="@+id/action_turn_on_bluetooth"
-                        app:rippleColor="@color/colorPrimaryDark"
-                        android:textColor="@color/colorAccent" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </com.google.android.material.card.MaterialCardView>
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/toolbar"
-            app:cardCornerRadius="0dp"
-            android:visibility="@{isPermissionsGranted ? View.GONE : View.VISIBLE, default=gone}"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/colorPrimaryDark">
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                app:cardCornerRadius="9dp"
-                app:cardBackgroundColor="@color/colorPrimary">
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingLeft="24dp"
-                    android:paddingRight="24dp"
-                    android:paddingTop="32dp"
-                    android:paddingBottom="16dp"
-                    android:orientation="vertical"
-                    android:layout_gravity="center">
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/round_location_on"
-                        android:tint="@color/colorAccent" />
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/request_permission_title"
-                        android:gravity="center"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="4dp"
-                        android:textAllCaps="false"
-                        android:textColor="@color/colorPrimaryText"
-                        app:textAllCaps="false"
-                        android:textSize="20sp"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Button"/>
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/request_permission_message"
-                        android:gravity="center"
-                        android:textSize="17sp"
-                        android:textColor="@color/colorPrimaryText"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:text="@string/action_grant_permission"
-                        android:layout_marginTop="24dp"
-                        android:layout_marginBottom="0dp"
-                        android:id="@+id/action_request_permission"
-                        app:rippleColor="@color/colorPrimaryDark"
-                        android:textColor="@color/colorAccent" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </com.google.android.material.card.MaterialCardView>
-    </RelativeLayout>
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:textAppearance="@style/AppTheme.HeaderTextAppearance"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="24dp"
+                            android:paddingBottom="16dp"
+                            android:paddingLeft="24dp"
+                            android:paddingRight="24dp"
+                            android:gravity="center"
+                            android:text="@string/enabled_the_service_message"
+                            android:textColor="@color/colorAccent"
+                            android:id="@+id/header"/>
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/beacons_list"
+                            android:paddingBottom="16dp"
+                            tools:listitem="@layout/nearby_beacons_item_layout"
+                            android:clipToPadding="false" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+        </RelativeLayout>
 </layout>

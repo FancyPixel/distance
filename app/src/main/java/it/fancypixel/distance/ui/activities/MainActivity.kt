@@ -9,10 +9,13 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.Navigation
+import com.google.android.material.transition.MaterialContainerTransformSharedElementCallback
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -22,8 +25,10 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.karumi.dexter.listener.single.PermissionListener
 import it.fancypixel.distance.R
+import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.toast
+import kotlinx.coroutines.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -54,7 +59,11 @@ class MainActivity : AppCompatActivity() {
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    // Keep system bars (status bar, navigation bar) persistent throughout the transition.
+    window.sharedElementsUseOverlay = false
+
     super.onCreate(savedInstanceState)
+
     setContentView(R.layout.activity_main)
 
     viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
@@ -65,6 +74,10 @@ class MainActivity : AppCompatActivity() {
 
   override fun onResume() {
     super.onResume()
+
+    if (Preferences.showIntro && mainNavController?.currentDestination?.id != R.id.onboardingFragment) {
+      mainNavController?.navigate(R.id.onboardingFragment)
+    }
 
     // Update the bluetooth status
     with(BluetoothAdapter.getDefaultAdapter()) {
@@ -80,8 +93,8 @@ class MainActivity : AppCompatActivity() {
     registerReceiver(bluetoothBroadcastReceiver, intentFiler)
   }
 
-  override fun onDestroy() {
+  override fun onStop() {
     unregisterReceiver(bluetoothBroadcastReceiver)
-    super.onDestroy()
+    super.onStop()
   }
 }

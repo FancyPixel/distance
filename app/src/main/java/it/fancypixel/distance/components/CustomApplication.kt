@@ -36,6 +36,7 @@ class CustomApplication: Application() {
         // Dark theme
         AppCompatDelegate.setDefaultNightMode(Preferences.darkThemePreference)
 
+        BeaconManager.setDebug(org.altbeacon.beacon.BuildConfig.DEBUG)
         backgroundPowerSaver = BackgroundPowerSaver(this)
     }
 }

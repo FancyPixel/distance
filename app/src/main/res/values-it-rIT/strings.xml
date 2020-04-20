@@ -5,8 +5,9 @@
     <string name="profile_image_alt">immagine profile</string>
     <string name="settings_header_main">Impostazioni</string>
     <string name="settings_header_style">Tema</string>
-    <string name="settings_header_development">Sviluppatori</string>
+    <string name="settings_header_development">Informazioni</string>
     <string name="settings_title_choose_theme">Tema</string>
+    <string name="settings_title_company">Sviluppatori</string>
     <string name="settings_title_project">Progetto GitHub</string>
     <string name="settings_title_feedback">Assistenza</string>
     <string name="settings_subtitle_feedback">Richiedi supporto o nuove funzionalità.</string>
@@ -23,6 +24,8 @@
     <string name="ongoing_notification_channel_description">Mostra una notifica quando il servizio è attivo.</string>
     <string name="wakeup_notification_channel_name">Notifiche beacon vicino</string>
     <string name="wakeup_notification_channel_description">Mostra una notifica quando un beacon è nelle vicinanze.</string>
+    <string name="inactive_notification_channel_name">Servizio non attivo</string>
+    <string name="inactive_notification_channel_description">Mostra una notifica quando il servizio è inattivo.</string>
     <string name="notification_message">Stiamo monitorando i device nelle vicinanze.</string>
     <string name="notification_title">Distance è attivo</string>
     <string name="advertising_not_possible_message">L\'applicazione avrà delle funzionalità non abilitate a causa del dispositivo.</string>
@@ -61,10 +64,21 @@
     <string name="action_move_to_desk">Sulla scrivania</string>
     <string name="action_move_to_pocket">In tasca</string>
     <string name="settings_header_tolerance">Tolleranza</string>
-    <string name="settings_title_debug_log">Debug Log</string>
+    <string name="settings_title_debug_log">Modalità Debug</string>
     <string name="settings_subtitle_debug_log_on">Attivo</string>
     <string name="settings_subtitle_debug_log_off">Non attivo</string>
     <string name="settings_title_id">ID Dispositivo</string>
     <string name="device_location_unkown">Sconosciuta</string>
     <string name="battery">Batteria</string>
+    <string name="action_next">Avanti</string>
+    <string name="action_back">Indietro</string>
+    <string name="action_done">Fine</string>
+    <string name="intro_welcome_title">Distance</string>
+    <string name="intro_welcome_subtitle">La soluzione gratuita e professionale per il tracciamento e il distanziamento sociale, dedicata alle imprese.</string>
+    <string name="intro_location_title">Localizzazione</string>
+    <string name="intro_location_subtitle">Localizzeremo i dispositivi nelle vicinanze rispetto alla tua posizione, in modo totalmente anonimo.</string>
+    <string name="intro_notifications_title">Notifiche</string>
+    <string name="intro_notifications_subtitle">Ti avvertiremo con una notifica non invasiva ogni volta che sarai troppo vicino ad un altro dispositivo.</string>
+    <string name="intro_all_set_title">Attiva il servizio</string>
+    <string name="intro_all_set_subtitle">Puoi abilitrare e disabilitare il servizio in ogni momento tramite l\'applicazione e dalla barra delle notifiche.</string>
 </resources>

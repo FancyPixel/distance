@@ -19,7 +19,6 @@ import android.hardware.SensorManager
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.*
-import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -70,6 +69,16 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         when (intent.action) {
             Constants.ACTION_START_FOREGROUND_SERVICE -> {
+                with(BluetoothAdapter.getDefaultAdapter()) {
+                    if (!isEnabled) {
+                        try {
+                            enable()
+                        } catch (ex: Exception) {
+                            toast(getString(R.string.notification_message_with_ble_off))
+                        }
+                    }
+                }
+
                 if (isAdvertisingPossible) {
                     startAdvertising()
                 }
@@ -107,6 +116,9 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                     beaconTransmitter.stopAdvertising()
                 }
                 beaconManager.unbind(this)
+                with(NotificationManagerCompat.from(this)) {
+                    cancel(NOTIFICATION_ID)
+                }
 
                 stopForeground(true)
                 stopSelf()
@@ -116,8 +128,12 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
     }
 
     private fun startAdvertising() {
+        beaconTransmitter.stopAdvertising()
         val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager?
         val batLevel = bm!!.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+
+        beaconTransmitter.advertiseMode = AdvertiseSettings.ADVERTISE_MODE_BALANCED
+        beaconTransmitter.advertiseTxPowerLevel = AdvertiseSettings.ADVERTISE_TX_POWER_HIGH
 
         val beacon = Beacon.Builder()
             .setId1(BEACON_ID)
@@ -128,11 +144,12 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
             .build()
 
         // Change the layout below for other beacon types
-        beaconTransmitter.stopAdvertising()
         beaconTransmitter.startAdvertising(beacon, object : AdvertiseCallback() {
             override fun onStartFailure(errorCode: Int) {
-                toast(getString(R.string.generic_error))
-                stopBeaconService(this@BeaconService)
+                if (errorCode != 3) {
+                    toast(getString(R.string.generic_error))
+                    stopBeaconService(this@BeaconService)
+                }
             }
             override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
             }
@@ -168,15 +185,15 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                         // Device location error
                         val deviceLocationError = when (Preferences.deviceLocation) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 2.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 3.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 1.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 2.0
                             else -> 0.0
                         }
 
                         val transmittingDeviceLocationError = when ((beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 2.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 3.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 1.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 2.0
                             else -> 0.0
                         }
 
@@ -194,7 +211,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                         val level = beacon.id3.toInt() % 1000
                         val batteryLevelError = (100 - level) / 100 * 10.0
 
-                        val calculatedMinDistance = 2.0 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError
+                        val calculatedMinDistance = 2 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError
 
                         if (beacon.distance < calculatedMinDistance) {
                             EventBus.getDefault().post(NearbyBeaconEvent(beacon))
@@ -321,8 +338,6 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
             if (!isEnabled) {
                 builder.setContentTitle(this@BeaconService.getString(R.string.notification_title_with_ble_off))
                 builder.setContentText(this@BeaconService.getString(R.string.notification_message_with_ble_off))
-//                builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
-//                builder.setVibrate(longArrayOf(0, 1000, 1000, 1000, 1000))
             }
         }
 
@@ -380,8 +395,16 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
         with(NotificationManagerCompat.from(this)) {
             cancel(NOTIFICATION_ID)
         }
+
+        if (beaconManager.isBound(this)) {
+            beaconManager.unbind(this)
+        }
+        beaconTransmitter.stopAdvertising()
+
         sensorManager.unregisterListener(this)
+
         unregisterReceiver(bluetoothBroadcastReceiver)
+
         ringtone.release()
         super.onDestroy()
     }
@@ -432,6 +455,15 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                             NotificationManager.IMPORTANCE_DEFAULT
                         ).apply {
                             description = mContext.getString(R.string.wakeup_notification_channel_description)
+                        })
+
+                    createNotificationChannel(
+                        NotificationChannel(
+                            mContext.getString(R.string.inactive_notification_channel_id),
+                            mContext.getString(R.string.inactive_notification_channel_name),
+                            NotificationManager.IMPORTANCE_HIGH
+                        ).apply {
+                            description = mContext.getString(R.string.inactive_notification_channel_description)
                         })
                 }
             }
