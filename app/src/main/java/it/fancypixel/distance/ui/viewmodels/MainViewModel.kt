@@ -2,23 +2,15 @@ package it.fancypixel.distance.ui.viewmodels
 
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
-import android.content.Context
-import android.content.Context.BATTERY_SERVICE
-import android.os.BatteryManager
-import android.provider.Settings
-import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.View
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.chibatching.kotpref.livedata.asLiveData
-import it.fancypixel.distance.components.CustomApplication
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.services.BeaconService
-import it.fancypixel.distance.utils.toast
 import kotlinx.coroutines.*
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconTransmitter
@@ -49,7 +41,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         BluetoothAdapter.getDefaultAdapter().isEnabled && BeaconTransmitter.checkTransmissionSupported(application) != BeaconTransmitter.SUPPORTED
     }
     val isPermissionGranted: MutableLiveData<Boolean> = MutableLiveData(false)
-    val bluetoothStatus: MutableLiveData<Boolean> = MutableLiveData()
+    val isBluetoothDisabled: MutableLiveData<Boolean> = MutableLiveData(false)
 
     fun updateBeaconList(updatedBeacon: Beacon) {
         _nearbyBeacons.value?.let {
@@ -105,7 +97,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         BeaconService.startBeaconService(getApplication())
     }
 
-    private fun stopService() = BeaconService.stopBeaconService(getApplication())
+    fun stopService() = BeaconService.stopBeaconService(getApplication())
 
     fun toggleService(view: View?) {
         view?.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
@@ -120,5 +112,5 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         beaconsRegisteredTime.clear()
     }
 
-    fun updateBluetoothStatus(status: Int) = bluetoothStatus.postValue(status == BluetoothAdapter.STATE_OFF)
+    fun updateBluetoothStatus(status: Int) = isBluetoothDisabled.postValue(status == BluetoothAdapter.STATE_OFF)
 }

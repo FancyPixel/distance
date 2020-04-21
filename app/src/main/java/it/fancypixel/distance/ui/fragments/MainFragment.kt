@@ -1,18 +1,13 @@
 package it.fancypixel.distance.ui.fragments
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.content.Intent
+import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
-import androidx.core.view.marginTop
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
@@ -21,35 +16,22 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.ShapeAppearanceModel
-import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
-import it.fancypixel.distance.components.events.DeviceLocationUpdateEvent
 import it.fancypixel.distance.components.events.NearbyBeaconEvent
 import it.fancypixel.distance.databinding.MainFragmentBinding
 import it.fancypixel.distance.global.Constants
-import it.fancypixel.distance.services.ToggleServiceReceiver
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
-import it.fancypixel.distance.utils.toPixel
-import it.fancypixel.distance.utils.toast
 import kotlinx.android.synthetic.main.main_fragment.*
 import net.idik.lib.slimadapter.SlimAdapter
 import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconTransmitter
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.lang.Exception
 
 
 class MainFragment : Fragment() {
@@ -76,7 +58,7 @@ class MainFragment : Fragment() {
         viewModel = ViewModelProvider(activity as MainActivity).get(MainViewModel::class.java)
         val binding = DataBindingUtil.inflate<MainFragmentBinding>(inflater, R.layout.main_fragment, container, false)
 
-        subscribeUi(binding, viewModel.darkThemeMode, viewModel.isServiceEnabled, viewModel.nearbyBeacons, viewModel.bluetoothStatus, viewModel.isPermissionGranted, viewModel.debug)
+        subscribeUi(binding, viewModel.darkThemeMode, viewModel.isServiceEnabled, viewModel.nearbyBeacons, viewModel.isBluetoothDisabled, viewModel.debug)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -99,33 +81,6 @@ class MainFragment : Fragment() {
                     dialog.dismiss()
                 }
                 .show()
-        }
-
-        action_request_permission.setOnClickListener {
-            Dexter.withContext(requireActivity())
-                .withPermissions(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ).withListener(object: MultiplePermissionsListener {
-                    override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
-                        report?.let {
-                            if (report.areAllPermissionsGranted()){
-                                viewModel.isPermissionGranted.value = true
-                            }
-                        }
-                    }
-                    override fun onPermissionRationaleShouldBeShown(
-                        permissions: MutableList<PermissionRequest>?,
-                        token: PermissionToken?
-                    ) {
-                        // Remember to invoke this method when the custom rationale is closed
-                        // or just by default if you don't want to use any custom rationale.
-                        token?.continuePermissionRequest()
-                    }
-                })
-                .withErrorListener {
-                    viewModel.isPermissionGranted.value = false
-                }
-                .check()
         }
 
         beacons_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
@@ -171,6 +126,18 @@ class MainFragment : Fragment() {
             }
 
         })
+
+        action_enable.setOnClickListener {
+            disabled_service_ui.animate().translationY(disabled_service_ui.height.toFloat()).withEndAction {
+                viewModel.startService()
+            }.start()
+        }
+
+        action_disable.setOnClickListener {
+            disabled_service_ui.animate().translationY(0f).withEndAction {
+                viewModel.stopService()
+            }.start()
+        }
     }
 
 
@@ -180,7 +147,6 @@ class MainFragment : Fragment() {
         isServiceEnabled: LiveData<Boolean>,
         nearbyBeacons: LiveData<ArrayList<Any>>,
         bluetoothStatus: MutableLiveData<Boolean>,
-        isPermissionGranted: MutableLiveData<Boolean>,
         debug: LiveData<Boolean>
     ) {
         darkThemeMode.observe(viewLifecycleOwner, Observer {
@@ -212,20 +178,20 @@ class MainFragment : Fragment() {
                 )
             }
 
-            if (it) {
-                ripple.startRippleAnimation()
+            if (disabled_service_ui.height == 0) {
+                disabled_service_ui.translationY = if (it) Resources.getSystem().displayMetrics.heightPixels.toFloat() else 0f
             } else {
-                ripple.stopRippleAnimation()
+                disabled_service_ui.translationY = if (it) disabled_service_ui.height.toFloat() else 0f
             }
-        })
-
-        isPermissionGranted.observe(viewLifecycleOwner, Observer {
-            binding.isPermissionsGranted = it
         })
 
         debug.observe(viewLifecycleOwner, Observer {
             beacons_list.visibility = if (it) View.VISIBLE else View.GONE
             binding.isDebugModeEnabled = it
+        })
+
+        bluetoothStatus.observe(viewLifecycleOwner, Observer {
+            ble_off_warning.isVisible = it
         })
     }
 
@@ -243,4 +209,25 @@ class MainFragment : Fragment() {
         super.onStop()
         EventBus.getDefault().unregister(this)
     }
+
+
+    /**
+     *  Data Binding adapters for UI margins
+     */
+    @BindingAdapter("android:layout_marginTop")
+    fun ViewGroup.setMarginTopValue(marginValue: Float) =
+        (layoutParams as ViewGroup.MarginLayoutParams).apply { topMargin = marginValue.toInt() }
+
+    @BindingAdapter("android:layout_marginBottom")
+    fun ViewGroup.setMarginBottomValue(marginValue: Float) =
+        (layoutParams as ViewGroup.MarginLayoutParams).apply { bottomMargin = marginValue.toInt() }
+
+    @BindingAdapter("android:layout_marginStart")
+    fun ViewGroup.setMarginStartValue(marginValue: Float) =
+        (layoutParams as ViewGroup.MarginLayoutParams).apply { leftMargin = marginValue.toInt() }
+
+    @BindingAdapter("android:layout_marginEnd")
+    fun ViewGroup.setMarginEndValue(marginValue: Float) =
+        (layoutParams as ViewGroup.MarginLayoutParams).apply { rightMargin = marginValue.toInt() }
+
 }

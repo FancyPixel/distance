@@ -11,6 +11,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -26,8 +28,12 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.karumi.dexter.listener.single.PermissionListener
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
+import it.fancypixel.distance.ui.fragments.MainFragmentDirections
+import it.fancypixel.distance.ui.fragments.OnboardingFragment
+import it.fancypixel.distance.ui.fragments.OnboardingFragmentDirections
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.toast
+import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.coroutines.*
 
 
@@ -86,6 +92,11 @@ class MainActivity : AppCompatActivity() {
 
     // Check location permission
     viewModel.isPermissionGranted.value = checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    viewModel.isPermissionGranted.observe(this, Observer {
+      if (!it && !Preferences.showIntro && mainNavController?.currentDestination?.id != R.id.onboardingFragment) {
+        mainNavController?.navigate(R.id.onboardingFragment, bundleOf("section" to OnboardingFragment.Companion.IntroSection.BLUETOOTH))
+      }
+    })
 
     val intentFiler = IntentFilter().apply {
       addAction(BluetoothAdapter.ACTION_STATE_CHANGED)

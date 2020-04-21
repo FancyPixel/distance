@@ -318,24 +318,26 @@ class SettingsFragment : Fragment() {
                 )
             }
         }
-        when (viewModel.batteryLevel.value) {
-            true -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_battery_error),
-                        getString(R.string.settings_subtitle_battery_error_on),
-                        R.drawable.round_notifications,
-                        View.OnClickListener { Preferences.useBatteryLevel = false })
-                )
-            }
-            false -> {
-                settings.add(
-                    SettingsItem(
-                        getString(R.string.settings_title_battery_error),
-                        getString(R.string.settings_subtitle_battery_error_off),
-                        R.drawable.round_notifications,
-                        View.OnClickListener { Preferences.useBatteryLevel = true })
-                )
+        if (Preferences.debug) {
+            when (viewModel.batteryLevel.value) {
+                true -> {
+                    settings.add(
+                        SettingsItem(
+                            getString(R.string.settings_title_battery_error),
+                            getString(R.string.settings_subtitle_battery_error_on),
+                            R.drawable.round_notifications,
+                            View.OnClickListener { Preferences.useBatteryLevel = false })
+                    )
+                }
+                false -> {
+                    settings.add(
+                        SettingsItem(
+                            getString(R.string.settings_title_battery_error),
+                            getString(R.string.settings_subtitle_battery_error_off),
+                            R.drawable.round_notifications,
+                            View.OnClickListener { Preferences.useBatteryLevel = true })
+                    )
+                }
             }
         }
 

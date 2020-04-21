@@ -7,6 +7,8 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:statusBarColor">@color/colorPrimary</item>
         <item name="android:windowBackground">@drawable/background_splash_screen</item>
+        <item name="android:ambientShadowAlpha">0.05</item>
+        <item name="android:spotShadowAlpha">0.05</item>
     </style>
 
     <style name="AppTheme.Intro" parent="AppTheme">

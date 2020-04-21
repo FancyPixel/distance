@@ -69,16 +69,6 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         when (intent.action) {
             Constants.ACTION_START_FOREGROUND_SERVICE -> {
-                with(BluetoothAdapter.getDefaultAdapter()) {
-                    if (!isEnabled) {
-                        try {
-                            enable()
-                        } catch (ex: Exception) {
-                            toast(getString(R.string.notification_message_with_ble_off))
-                        }
-                    }
-                }
-
                 if (isAdvertisingPossible) {
                     startAdvertising()
                 }

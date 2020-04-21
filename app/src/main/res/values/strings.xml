@@ -33,8 +33,10 @@
     <string name="notification_message">We are checking for near devices.</string>
     <string name="notification_title">Distance is running</string>
     <string name="advertising_not_possible_message">The app functionality may be limited due to the device hardware.\nYou\'ll be able to discover near devices but you will not be visible to them.</string>
-    <string name="action_enable">Enable the service</string>
+    <string name="action_enable">Enable</string>
+    <string name="action_enable_the_service">Enable the service</string>
     <string name="action_disable">Disable</string>
+    <string name="action_disable_the_service">Disable the service</string>
     <string name="header_nearby_beacons">Nearby devices: %d</string>
     <string name="title_enabled">Enabled</string>
     <string name="empty_nearby_beacons_list_message">No nearby devices.</string>
@@ -48,7 +50,7 @@
     <string name="bluetooth_disabled_title" translatable="false">Bluetooth</string>
     <string name="bluetooth_disabled_message">We will use your Bluetooth to monitor\nyour distance from other devices.</string>
     <string name="action_turn_on_bluetooth">Turn on Bluetooth</string>
-    <string name="settings_title_tolerance">Range</string>
+    <string name="settings_title_tolerance">Alert range</string>
     <string name="settings_subtitle_tolerance_low">Low</string>
     <string name="settings_subtitle_tolerance_min">Min</string>
     <string name="settings_subtitle_tolerance_default">Default</string>
@@ -62,7 +64,7 @@
     <string name="settings_subtitle_notification_type_only_vibrate">Vibrate</string>
     <string name="settings_subtitle_notification_type_only_sound">Sound</string>
     <string name="settings_subtitle_notification_type_both">Vibrate and sound</string>
-    <string name="settings_title_battery_error">Battery level</string>
+    <string name="settings_title_battery_error">Battery level tolerance</string>
     <string name="settings_subtitle_battery_error_on">Enabled</string>
     <string name="settings_subtitle_battery_error_off">Disabled</string>
     <string name="action_move_to_desk">Move to Desk</string>
@@ -78,11 +80,11 @@
     <string name="action_back">Back</string>
     <string name="action_done">Done</string>
     <string name="intro_welcome_title">Distance</string>
-    <string name="intro_welcome_subtitle">La soluzione gratuita e professionale per il tracciamento e il distanziamento sociale, dedicata alle imprese.</string>
+    <string name="intro_welcome_subtitle">A free professional tool for contact tracking and social distancing, designed for businesses.</string>
     <string name="intro_location_title">Localizzazione</string>
-    <string name="intro_location_subtitle">Localizzeremo i dispositivi nelle vicinanze rispetto alla tua posizione, in modo totalmente anonimo.</string>
+    <string name="intro_location_subtitle">We’ll track devices in your\nsurroundings, anonymously.</string>
     <string name="intro_notifications_title">Notifiche</string>
-    <string name="intro_notifications_subtitle">Ti avvertiremo con una notifica non invasiva ogni volta che sarai troppo vicino ad un altro dispositivo.</string>
+    <string name="intro_notifications_subtitle">We’ll notify you discretely every time you are too close to another device.</string>
     <string name="intro_all_set_title">Attiva il servizio</string>
-    <string name="intro_all_set_subtitle">Puoi abilitrare e disabilitare il servizio in ogni momento tramite l\'applicazione e dalla barra delle notifiche.</string>
+    <string name="intro_all_set_subtitle">You can enable or disable this service at any time from the app or the Notification Bar.</string>
 </resources>

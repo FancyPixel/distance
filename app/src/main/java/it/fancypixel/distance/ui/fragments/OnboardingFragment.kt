@@ -15,6 +15,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.navArgs
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.transition.MaterialFadeThrough
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
@@ -32,6 +34,13 @@ class OnboardingFragment : Fragment() {
 
     companion object {
         fun newInstance() = OnboardingFragment()
+
+        enum class IntroSection(val page: Int) {
+            WELCOME(0),
+            BLUETOOTH(1),
+            NOTIFICATION(2),
+            ALL_SET(3)
+        }
     }
 
     private lateinit var viewModel: MainViewModel
@@ -64,6 +73,8 @@ class OnboardingFragment : Fragment() {
                 injector.text(R.id.title, item.title)
                     .text(R.id.subtitle, item.message)
                     .image(R.id.icon, item.icon)
+                    .clicked(R.id.action_button, item.buttonCallBack)
+                    .visibility(R.id.action_button, if (item.buttonCallBack == null ||  viewModel.isPermissionGranted.value == true) View.GONE else View.VISIBLE)
             }
 
         pager.adapter = adapter
@@ -72,7 +83,9 @@ class OnboardingFragment : Fragment() {
 
         adapter.updateData(listOf(
             IntroItem(IntroSection.WELCOME, getString(R.string.intro_welcome_title), getString(R.string.intro_welcome_subtitle), ContextCompat.getDrawable(requireContext(), R.drawable.ic_intro_circles)),
-            IntroItem(IntroSection.BLUETOOTH, getString(R.string.intro_location_title), getString(R.string.intro_location_subtitle), ContextCompat.getDrawable(requireContext(), R.drawable.ic_intro_ble)),
+            IntroItem(IntroSection.BLUETOOTH, getString(R.string.intro_location_title), getString(R.string.intro_location_subtitle), ContextCompat.getDrawable(requireContext(), R.drawable.ic_intro_ble),
+               View.OnClickListener { requirePermission() }
+            ),
             IntroItem(IntroSection.NOTIFICATION, getString(R.string.intro_notifications_title), getString(
                             R.string.intro_notifications_subtitle), ContextCompat.getDrawable(requireContext(), R.drawable.ic_intro_notify)),
             IntroItem(IntroSection.ALL_SET, getString(R.string.intro_all_set_title), getString(R.string.intro_all_set_subtitle), ContextCompat.getDrawable(requireContext(), R.drawable.ic_intro_end))
@@ -86,15 +99,14 @@ class OnboardingFragment : Fragment() {
                         moveNext()
                     }
                     IntroSection.BLUETOOTH -> {
-                        if (requireActivity().checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            requirePermission()
-                        } else {
+                        if (requireActivity().checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                             moveNext()
                         }
                     }
                     IntroSection.NOTIFICATION -> {
                         moveNext()
                     }
+                    IntroSection.ALL_SET -> {}
                 }
             }
         }
@@ -104,30 +116,40 @@ class OnboardingFragment : Fragment() {
             viewModel.startService()
             it.findNavController().navigate(R.id.action_onboardingFragment_to_mainFragment)
         }
+
+        arguments?.let { bundle ->
+            bundle["section"]?.let {
+                pager.setCurrentItem((it as IntroSection).page, false)
+                bottom_bar.visibility = View.INVISIBLE
+            }
+        }
+
+        pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+                action_next.isVisible = (position < adapter.data.size - 1) && (position != IntroSection.BLUETOOTH.page || viewModel.isPermissionGranted.value == true)
+                action_finish.isVisible = position == adapter.data.size - 1
+            }
+        })
     }
 
     private fun moveNext() {
         if (pager.currentItem < adapter.data.size - 1) {
             pager.setCurrentItem(pager.currentItem + 1, true)
         }
-
-        action_next.isVisible = pager.currentItem < adapter.data.size - 1
-        action_finish.isVisible = pager.currentItem == adapter.data.size - 1
     }
 
     private fun moveBack() {
         when {
+            !Preferences.showIntro -> {
+                requireActivity().finish()
+            }
             pager.currentItem > 0 -> {
                 pager.setCurrentItem(pager.currentItem - 1, true)
-
-                action_next.isVisible = pager.currentItem < adapter.data.size - 1
-                action_finish.isVisible = pager.currentItem == adapter.data.size - 1
             }
             Preferences.showIntro -> {
                 requireActivity().finish()
-            }
-            else -> {
-                requireActivity().onBackPressed()
             }
         }
     }
@@ -141,7 +163,13 @@ class OnboardingFragment : Fragment() {
                     report?.let {
                         if (report.areAllPermissionsGranted()){
                             viewModel.isPermissionGranted.value = true
-                            moveNext()
+                            if (Preferences.showIntro) {
+                                action_next.isVisible = true
+                                adapter.notifyItemChanged(IntroSection.BLUETOOTH.page)
+                            } else {
+                                bottom_bar.findNavController()
+                                    .navigate(R.id.action_onboardingFragment_to_mainFragment)
+                            }
                         }
                     }
                 }
@@ -160,13 +188,6 @@ class OnboardingFragment : Fragment() {
             .check()
     }
 
-    enum class IntroSection {
-        WELCOME,
-        BLUETOOTH,
-        LOCATION,
-        NOTIFICATION,
-        ALL_SET
-    }
+    private class IntroItem(val id: IntroSection, val title: String, val message: String, val icon: Drawable?, val buttonCallBack: View.OnClickListener? = null)
 
-    private class IntroItem(val id: IntroSection, val title: String, val message: String, val icon: Drawable?)
 }
