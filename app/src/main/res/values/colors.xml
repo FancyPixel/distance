@@ -18,4 +18,5 @@
     <color name="errorColorText">#E93B3B</color>
     <color name="snackbarBackgroundColor">#323232</color>
     <color name="disabledButtonBackground">#efefef</color>
+    <color name="mainIconBg">#BABABA</color>
 </resources>

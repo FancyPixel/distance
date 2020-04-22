@@ -21,6 +21,7 @@
     <string name="action_settings">Settings</string>
     <string name="service_enabled">Service Enabled</string>
     <string name="service_disabled">Service Disabled</string>
+    <string name="service_paused">Service Paused</string>
     <string name="ongoing_notification_channel_name">Running Service</string>
     <string name="ongoing_notification_channel_description">Show a notification when the beacon service is enabled.</string>
     <string name="ongoing_notification_channel_id" translatable="false">beacon-service</string>
@@ -81,10 +82,12 @@
     <string name="action_done">Done</string>
     <string name="intro_welcome_title">Distance</string>
     <string name="intro_welcome_subtitle">A free professional tool for contact tracking and social distancing, designed for businesses.</string>
-    <string name="intro_location_title">Localizzazione</string>
+    <string name="intro_location_title">Localization</string>
     <string name="intro_location_subtitle">We’ll track devices in your\nsurroundings, anonymously.</string>
-    <string name="intro_notifications_title">Notifiche</string>
+    <string name="intro_notifications_title">Notifications</string>
     <string name="intro_notifications_subtitle">We’ll notify you discretely every time you are too close to another device.</string>
-    <string name="intro_all_set_title">Attiva il servizio</string>
+    <string name="intro_all_set_title">Enable the service</string>
     <string name="intro_all_set_subtitle">You can enable or disable this service at any time from the app or the Notification Bar.</string>
+    <string name="someone_is_near_notification_title">Someone is near.</string>
+    <string name="someone_is_near_notification_subtitle">Stay safe, keep the distance.</string>
 </resources>

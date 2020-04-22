@@ -3,6 +3,7 @@ package it.fancypixel.distance.ui.fragments
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,10 +22,13 @@ import com.google.android.material.transition.MaterialSharedAxis
 import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
+import io.realm.Realm
 import it.fancypixel.distance.R
+import it.fancypixel.distance.components.BottomSheetMenu
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.databinding.SettingsFragmentBinding
 import it.fancypixel.distance.global.Constants
+import it.fancypixel.distance.models.Bump
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.openURI
@@ -95,65 +99,55 @@ class SettingsFragment : Fragment() {
             .attachTo(settings_list)
 
         updateSettingsMenu()
-    }
 
-    private fun showToleranceMenu(view: View) {
-        val tolerance = viewModel.tolerance.value
-        getStyledPowerMenuBuilder(context)
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_tolerance_low), tolerance == Constants.PREFERENCE_TOLERANCE_LOW, Constants.PREFERENCE_TOLERANCE_LOW))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_tolerance_min), tolerance == Constants.PREFERENCE_TOLERANCE_MIN, Constants.PREFERENCE_TOLERANCE_MIN))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_tolerance_default), tolerance == Constants.PREFERENCE_TOLERANCE_DEFAULT, Constants.PREFERENCE_TOLERANCE_DEFAULT))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_tolerance_high), tolerance == Constants.PREFERENCE_TOLERANCE_HIGH, Constants.PREFERENCE_TOLERANCE_HIGH))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_tolerance_max), tolerance == Constants.PREFERENCE_TOLERANCE_MAX, Constants.PREFERENCE_TOLERANCE_MAX))
-            .setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
-                Preferences.tolerance = item.tag as Int
-            }
-            .build().showAsDropDown(view, 20.toPixel(requireActivity()), (-10).toPixel(requireActivity()))
-    }
 
-    private fun showNotificationTypeMenu(view: View) {
-        val notificationType = viewModel.notificationType.value
-        getStyledPowerMenuBuilder(context)
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_notification_type_only_vibrate), notificationType == Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE, Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_notification_type_only_sound), notificationType == Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND, Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_notification_type_both), notificationType == Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH, Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH))
-            .setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
-                Preferences.notificationType = item.tag as Int
-            }
-            .build().showAsDropDown(view, 20.toPixel(requireActivity()), (-10).toPixel(requireActivity()))
-    }
-
-    private fun showDarkThemeMenu(view: View) {
-        val mode = viewModel.darkThemeMode.value
-        val powerMenuBuilder = getStyledPowerMenuBuilder(context)
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_dark_theme_light), mode == AppCompatDelegate.MODE_NIGHT_NO, AppCompatDelegate.MODE_NIGHT_NO))
-            .addItem(PowerMenuItem(getString(R.string.settings_subtitle_dark_theme_dark), mode == AppCompatDelegate.MODE_NIGHT_YES, AppCompatDelegate.MODE_NIGHT_YES))
-
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-            powerMenuBuilder.addItem(PowerMenuItem(getString(R.string.settings_subtitle_dark_theme_follow_system), mode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM))
-        } else {
-            powerMenuBuilder.addItem(PowerMenuItem(getString(R.string.settings_subtitle_dark_theme_by_battery_saver), mode == AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY, AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY))
+        val list = Realm.getDefaultInstance().where(Bump::class.java).findAll()
+        for (bump in list) {
+            Log.d("ciao", "Bump: ${bump}")
         }
-
-        powerMenuBuilder.setOnMenuItemClickListener { _: Int, item: PowerMenuItem ->
-            Preferences.darkThemePreference = item.tag as Int
-        }
-
-        powerMenuBuilder.build().showAsDropDown(view, 20.toPixel(requireActivity()), (-10).toPixel(requireActivity()))
     }
 
-    private fun getStyledPowerMenuBuilder(context: Context?) = PowerMenu.Builder(context)
-        .setAutoDismiss(true)
-        .setMenuRadius(24f)
-        .setMenuShadow(10f)
-        .setWidth(600)
-        .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
-        .setLifecycleOwner(viewLifecycleOwner)
-        .setBackgroundAlpha(0f)
-        .setMenuColor(ContextCompat.getColor(requireActivity(), R.color.colorPrimary))
-        .setTextColor(ContextCompat.getColor(requireActivity(), R.color.colorPrimaryText))
-        .setSelectedMenuColor(ContextCompat.getColor(requireActivity(), R.color.colorPrimary))
-        .setSelectedTextColor(ContextCompat.getColor(requireActivity(), R.color.colorAccent))
+    private fun showToleranceMenu() {
+        BottomSheetMenu<Int>(requireContext()).selectResource(Preferences.tolerance)
+            .addItem(getString(R.string.settings_subtitle_tolerance_max), Constants.PREFERENCE_TOLERANCE_MAX)
+            .addItem(getString(R.string.settings_subtitle_tolerance_high), Constants.PREFERENCE_TOLERANCE_HIGH)
+            .addItem(getString(R.string.settings_subtitle_tolerance_default), Constants.PREFERENCE_TOLERANCE_DEFAULT)
+            .addItem(getString(R.string.settings_subtitle_tolerance_min), Constants.PREFERENCE_TOLERANCE_MIN)
+            .addItem(getString(R.string.settings_subtitle_tolerance_low), Constants.PREFERENCE_TOLERANCE_LOW)
+            .addOnSelectItemListener { value ->
+                Preferences.tolerance = value
+            }.show()
+    }
+
+    private fun showNotificationTypeMenu() {
+        BottomSheetMenu<Int>(requireContext()).selectResource(Preferences.notificationType)
+            .addItem(getString(R.string.settings_subtitle_notification_type_only_vibrate), Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE)
+            .addItem(getString(R.string.settings_subtitle_notification_type_only_sound), Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND)
+            .addItem(getString(R.string.settings_subtitle_notification_type_both), Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH)
+            .addOnSelectItemListener { value ->
+                Preferences.notificationType = value
+            }.show()
+    }
+
+    private fun showDarkThemeMenu() {
+        BottomSheetMenu<Int>(requireContext())
+            .selectResource(Preferences.darkThemePreference)
+            .addItem(
+                getString(R.string.settings_subtitle_dark_theme_light),
+                AppCompatDelegate.MODE_NIGHT_NO
+            )
+            .addItem(
+                getString(R.string.settings_subtitle_dark_theme_dark),
+                AppCompatDelegate.MODE_NIGHT_YES
+            )
+            .addItem(
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) getString(R.string.settings_subtitle_dark_theme_follow_system) else getString(R.string.settings_subtitle_dark_theme_by_battery_saver),
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM else AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY
+            )
+            .addOnSelectItemListener { value ->
+                Preferences.darkThemePreference = value
+            }.show()
+    }
 
     private fun subscribeUi(
         settings: MutableLiveData<ArrayList<Any>>,
@@ -208,7 +202,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_notification_type),
                         getString(R.string.settings_subtitle_notification_type_only_vibrate),
                         R.drawable.round_notifications,
-                        View.OnClickListener { showNotificationTypeMenu(it) })
+                        View.OnClickListener { showNotificationTypeMenu() })
                 )
             }
             Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_SOUND -> {
@@ -217,7 +211,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_notification_type),
                         getString(R.string.settings_subtitle_notification_type_only_sound),
                         R.drawable.round_notifications,
-                        View.OnClickListener { showNotificationTypeMenu(it) })
+                        View.OnClickListener { showNotificationTypeMenu() })
                 )
             }
             Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH -> {
@@ -226,7 +220,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_notification_type),
                         getString(R.string.settings_subtitle_notification_type_both),
                         R.drawable.round_notifications,
-                        View.OnClickListener { showNotificationTypeMenu(it) })
+                        View.OnClickListener { showNotificationTypeMenu() })
                 )
             }
         }
@@ -238,7 +232,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_choose_theme),
                         getString(R.string.settings_subtitle_dark_theme_light),
                         R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
+                        View.OnClickListener { showDarkThemeMenu() })
                 )
             }
             AppCompatDelegate.MODE_NIGHT_YES -> {
@@ -247,7 +241,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_choose_theme),
                         getString(R.string.settings_subtitle_dark_theme_dark),
                         R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
+                        View.OnClickListener { showDarkThemeMenu() })
                 )
             }
             AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY -> {
@@ -256,7 +250,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_choose_theme),
                         getString(R.string.settings_subtitle_dark_theme_by_battery_saver),
                         R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
+                        View.OnClickListener { showDarkThemeMenu() })
                 )
             }
             AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM -> {
@@ -265,7 +259,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_choose_theme),
                         getString(R.string.settings_subtitle_dark_theme_follow_system),
                         R.drawable.ic_day_night,
-                        View.OnClickListener { showDarkThemeMenu(it) })
+                        View.OnClickListener { showDarkThemeMenu() })
                 )
             }
         }
@@ -278,7 +272,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_tolerance),
                         getString(R.string.settings_subtitle_tolerance_low),
                         R.drawable.round_tune_24,
-                        View.OnClickListener { showToleranceMenu(it) })
+                        View.OnClickListener { showToleranceMenu() })
                 )
             }
             Constants.PREFERENCE_TOLERANCE_MIN -> {
@@ -287,7 +281,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_tolerance),
                         getString(R.string.settings_subtitle_tolerance_min),
                         R.drawable.round_tune_24,
-                        View.OnClickListener { showToleranceMenu(it) })
+                        View.OnClickListener { showToleranceMenu() })
                 )
             }
             Constants.PREFERENCE_TOLERANCE_DEFAULT -> {
@@ -296,7 +290,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_tolerance),
                         getString(R.string.settings_subtitle_tolerance_default),
                         R.drawable.round_tune_24,
-                        View.OnClickListener { showToleranceMenu(it) })
+                        View.OnClickListener { showToleranceMenu() })
                 )
             }
             Constants.PREFERENCE_TOLERANCE_HIGH -> {
@@ -305,7 +299,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_tolerance),
                         getString(R.string.settings_subtitle_tolerance_high),
                         R.drawable.round_tune_24,
-                        View.OnClickListener { showToleranceMenu(it) })
+                        View.OnClickListener { showToleranceMenu() })
                 )
             }
             Constants.PREFERENCE_TOLERANCE_MAX -> {
@@ -314,7 +308,7 @@ class SettingsFragment : Fragment() {
                         getString(R.string.settings_title_tolerance),
                         getString(R.string.settings_subtitle_tolerance_max),
                         R.drawable.round_tune_24,
-                        View.OnClickListener { showToleranceMenu(it) })
+                        View.OnClickListener { showToleranceMenu() })
                 )
             }
         }

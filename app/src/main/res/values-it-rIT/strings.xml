@@ -20,6 +20,7 @@
     <string name="action_settings">Impostazioni</string>
     <string name="service_enabled">Monitoraggio attivo</string>
     <string name="service_disabled">Monitoraggio non attivo</string>
+    <string name="service_paused">Monitoraggio in pausa</string>
     <string name="ongoing_notification_channel_name">Monitoraggio attivo</string>
     <string name="ongoing_notification_channel_description">Mostra una notifica quando il monitoraggio è attivo.</string>
     <string name="wakeup_notification_channel_name">Notifiche beacon vicino</string>
@@ -78,9 +79,11 @@
     <string name="intro_welcome_title">Distance</string>
     <string name="intro_welcome_subtitle">La soluzione gratuita e professionale per il tracciamento e il distanziamento sociale, dedicata alle imprese.</string>
     <string name="intro_location_title">Localizzazione</string>
-    <string name="intro_location_subtitle">Localizziamo e monitoriamo i dispositivi nelle vicinanze rispetto alla tua posizione, in modo totalmente anonimo.</string>
+    <string name="intro_location_subtitle">Grazie all\'utilizzo del Bluetooth potremo localizzzare e monitorare i dispositivi nelle vicinanze, in modo totalmente anonimo.</string>
     <string name="intro_notifications_title">Notifiche</string>
     <string name="intro_notifications_subtitle">Nel momento in cui un dispositivo sarà troppo vicino avvertiremo entrambi con una notifica non invasiva.</string>
     <string name="intro_all_set_title">Attiva il monitoraggio</string>
     <string name="intro_all_set_subtitle">Puoi abilitare e disabilitare il monitoraggio in ogni momento tramite l\'applicazione e dalla barra delle notifiche.</string>
+    <string name="someone_is_near_notification_title">Localizzato un device</string>
+    <string name="someone_is_near_notification_subtitle">Manitieni la distanza di sicurezza.</string>
 </resources>

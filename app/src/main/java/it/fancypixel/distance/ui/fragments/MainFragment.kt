@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -133,7 +134,13 @@ class MainFragment : Fragment() {
             }.start()
         }
 
-        action_disable.setOnClickListener {
+        action_toggle.setOnClickListener {
+            disabled_service_ui.animate().translationY(0f).withEndAction {
+                viewModel.stopService()
+            }.start()
+        }
+
+        action_toggle_container.setOnClickListener {
             disabled_service_ui.animate().translationY(0f).withEndAction {
                 viewModel.stopService()
             }.start()
@@ -146,7 +153,7 @@ class MainFragment : Fragment() {
         darkThemeMode: LiveData<Int>,
         isServiceEnabled: LiveData<Boolean>,
         nearbyBeacons: LiveData<ArrayList<Any>>,
-        bluetoothStatus: MutableLiveData<Boolean>,
+        isBluetoothDisabled: MutableLiveData<Boolean>,
         debug: LiveData<Boolean>
     ) {
         darkThemeMode.observe(viewLifecycleOwner, Observer {
@@ -163,6 +170,8 @@ class MainFragment : Fragment() {
                 )
             }
             adapter.updateData(it)
+
+            nearby_device_count.text = if (it.size < 10) it.size.toString() else "9+"
         })
 
         isServiceEnabled.observe(viewLifecycleOwner, Observer {
@@ -190,8 +199,10 @@ class MainFragment : Fragment() {
             binding.isDebugModeEnabled = it
         })
 
-        bluetoothStatus.observe(viewLifecycleOwner, Observer {
-            ble_off_warning.isVisible = it
+        isBluetoothDisabled.observe(viewLifecycleOwner, Observer {
+            ble_off_message.isVisible = it
+            service_status_bg.setBackgroundColor(ContextCompat.getColor(requireContext(), if (it) R.color.errorColorText else android.R.color.transparent))
+            service_status.text = if (it) getString(R.string.service_paused) else getString(R.string.service_enabled)
         })
     }
 

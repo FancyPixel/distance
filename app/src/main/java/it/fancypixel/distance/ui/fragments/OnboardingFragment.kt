@@ -13,6 +13,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
@@ -27,8 +28,13 @@ import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
+import it.fancypixel.distance.utils.setCurrentItem
+import kotlinx.android.synthetic.main.intro_view.*
+import kotlinx.android.synthetic.main.intro_view.view.*
+import kotlinx.android.synthetic.main.intro_view.view.icon
 import kotlinx.android.synthetic.main.onboarding_fragment.*
 import net.idik.lib.slimadapter.SlimAdapter
+import kotlin.math.abs
 
 class OnboardingFragment : Fragment() {
 
@@ -41,6 +47,8 @@ class OnboardingFragment : Fragment() {
             NOTIFICATION(2),
             ALL_SET(3)
         }
+
+        const val SCROLL_ANIMATION_DURATION = 350L
     }
 
     private lateinit var viewModel: MainViewModel
@@ -78,7 +86,14 @@ class OnboardingFragment : Fragment() {
             }
 
         pager.adapter = adapter
-        pager.isUserInputEnabled = false
+        pager.setPageTransformer { page, position ->
+            if (position >= -1  && position <= 1) {
+                page.icon.translationY = 200f * abs(position)
+                page.icon_container.scaleX = 1f - (0.2f * abs(position))
+                page.icon_container.scaleY = 1f - (0.2f * abs(position))
+            }
+        }
+//        pager.isUserInputEnabled = false
         dots_indicator.setViewPager2(pager)
 
         adapter.updateData(listOf(
@@ -99,9 +114,9 @@ class OnboardingFragment : Fragment() {
                         moveNext()
                     }
                     IntroSection.BLUETOOTH -> {
-                        if (requireActivity().checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                        if (requireActivity().checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                             moveNext()
-                        }
+//                        }
                     }
                     IntroSection.NOTIFICATION -> {
                         moveNext()
@@ -120,6 +135,7 @@ class OnboardingFragment : Fragment() {
         arguments?.let { bundle ->
             bundle["section"]?.let {
                 pager.setCurrentItem((it as IntroSection).page, false)
+                pager.isUserInputEnabled = false
                 bottom_bar.visibility = View.INVISIBLE
             }
         }
@@ -128,15 +144,20 @@ class OnboardingFragment : Fragment() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
 
+                pager.isUserInputEnabled = position != IntroSection.BLUETOOTH.page || viewModel.isPermissionGranted.value == true
                 action_next.isVisible = (position < adapter.data.size - 1) && (position != IntroSection.BLUETOOTH.page || viewModel.isPermissionGranted.value == true)
                 action_finish.isVisible = position == adapter.data.size - 1
             }
+        })
+
+        viewModel.isPermissionGranted.observe(viewLifecycleOwner, Observer {
+            adapter.notifyItemChanged(IntroSection.BLUETOOTH.page)
         })
     }
 
     private fun moveNext() {
         if (pager.currentItem < adapter.data.size - 1) {
-            pager.setCurrentItem(pager.currentItem + 1, true)
+            pager.setCurrentItem(pager.currentItem + 1, SCROLL_ANIMATION_DURATION)
         }
     }
 
@@ -146,7 +167,7 @@ class OnboardingFragment : Fragment() {
                 requireActivity().finish()
             }
             pager.currentItem > 0 -> {
-                pager.setCurrentItem(pager.currentItem - 1, true)
+                pager.setCurrentItem(pager.currentItem - 1, SCROLL_ANIMATION_DURATION)
             }
             Preferences.showIntro -> {
                 requireActivity().finish()
@@ -157,7 +178,7 @@ class OnboardingFragment : Fragment() {
     private fun requirePermission() {
         Dexter.withContext(requireActivity())
             .withPermissions(
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ).withListener(object: MultiplePermissionsListener {
                 override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                     report?.let {
@@ -165,6 +186,7 @@ class OnboardingFragment : Fragment() {
                             viewModel.isPermissionGranted.value = true
                             if (Preferences.showIntro) {
                                 action_next.isVisible = true
+                                pager.isUserInputEnabled = true
                                 adapter.notifyItemChanged(IntroSection.BLUETOOTH.page)
                             } else {
                                 bottom_bar.findNavController()

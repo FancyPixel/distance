@@ -23,16 +23,19 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import io.realm.Realm
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.components.events.NearbyBeaconEvent
 import it.fancypixel.distance.global.Constants
+import it.fancypixel.distance.models.Bump
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.utils.toast
 import kotlinx.coroutines.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import org.greenrobot.eventbus.EventBus
+import java.util.*
 
 
 class BeaconService : Service(), BeaconConsumer, SensorEventListener {
@@ -85,6 +88,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
                     // Update th parser to handle the iBeacon format
                     beaconManager.beaconParsers.clear()
+                    beaconParser.setHardwareAssistManufacturerCodes(intArrayOf(0x004c))
                     beaconManager.beaconParsers.add(beaconParser)
 
                     beaconManager.bind(this@BeaconService)
@@ -163,7 +167,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
                 beaconManager.backgroundBetweenScanPeriod = if (state > 0) 1900L else 10000L
                 beaconManager.backgroundScanPeriod = if (state > 0) 1100L else 1100L
-                beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, Identifier.parse(BEACON_ID), null, null))
+                beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, null, Identifier.parse("$BEACON_MAJOR"), null))
 
                 beaconManager.removeAllRangeNotifiers()
                 beaconManager.addRangeNotifier { beacons, _ ->
@@ -180,7 +184,8 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                             else -> 0.0
                         }
 
-                        val transmittingDeviceLocationError = when ((beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000) {
+                        val location = (beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000
+                        val transmittingDeviceLocationError = when (location) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
                             Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 1.0
                             Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 2.0
@@ -205,6 +210,27 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
                         if (beacon.distance < calculatedMinDistance) {
                             EventBus.getDefault().post(NearbyBeaconEvent(beacon))
+                            Realm.getDefaultInstance().executeTransactionAsync { realm ->
+                                val currentIdNum: Number? = realm.where(Bump::class.java).max("id")
+                                val bump = realm.createObject(Bump::class.java, currentIdNum?.toInt()?.plus(1) ?: 1)
+                                bump.beaconUuid = beacon.id1.toString()
+                                bump.major = beacon.id2.toInt()
+                                bump.location = location
+                                bump.batteryLevel = level
+                                bump.distance = beacon.distance
+                                bump.calculatedDistance = when {
+                                    beacon.distance < calculatedMinDistance / 2 -> {
+                                        Constants.BeaconDistance.IMMEDIATE.value
+                                    }
+                                    beacon.distance < calculatedMinDistance -> {
+                                        Constants.BeaconDistance.NEAR.value
+                                    }
+                                    else -> {
+                                        Constants.BeaconDistance.FAR.value
+                                    }
+                                }
+                                bump.date = Calendar.getInstance().timeInMillis
+                            }
                         }
 
                         isSomeoneNear = beacon.distance < calculatedMinDistance
@@ -242,9 +268,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
     }
 
     private fun notify(strong: Boolean) {
-        if (!isInteractive()) {
-            wakeUpThePhone()
-        }
+        wakeUpThePhone()
 
         if (strong) {
             hasBeenStronglyNotified = true
@@ -267,7 +291,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                 v.vibrate(
                     VibrationEffect.createWaveform(
                         pattern,
-                        if (strong) 255 else VibrationEffect.DEFAULT_AMPLITUDE
+                        VibrationEffect.DEFAULT_AMPLITUDE
                     )
                 )
             } else {
@@ -296,15 +320,15 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
     private fun wakeUpThePhone() {
         val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.wakeup_notification_channel_id))
             .setSmallIcon(R.drawable.ic_stat_person)
-            .setContentTitle("Someone is near")
-            .setContentText("Fly out, away you fool!")
+            .setContentTitle(getString(R.string.someone_is_near_notification_title))
+            .setContentText(getString(R.string.someone_is_near_notification_subtitle))
             .setSound(null)
             .setColor(ContextCompat.getColor(this@BeaconService, R.color.colorAccent))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
         with(NotificationManagerCompat.from(this)) {
-            notify(NOTIFICATION_ID + 1, builder.build())
-            cancel(NOTIFICATION_ID + 1)
+            notify(WAKEUP_NOTIFICATION_ID, builder.build())
+            cancel(WAKEUP_NOTIFICATION_ID)
         }
     }
 
@@ -401,6 +425,8 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
     companion object {
         private const val NOTIFICATION_ID = 364
+        private const val WAKEUP_NOTIFICATION_ID = 365
+        private const val INACTIVE_NOTIFICATION_ID = 366
         const val REGION_TAG = "REGION_NEAR"
         const val BEACON_ID = "A2B2265F-77F6-4C6A-82ED-297B366FC684"
         const val BEACON_MAJOR = 12345
@@ -442,7 +468,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                         NotificationChannel(
                             mContext.getString(R.string.wakeup_notification_channel_id),
                             mContext.getString(R.string.wakeup_notification_channel_name),
-                            NotificationManager.IMPORTANCE_DEFAULT
+                            NotificationManager.IMPORTANCE_HIGH
                         ).apply {
                             description = mContext.getString(R.string.wakeup_notification_channel_description)
                         })

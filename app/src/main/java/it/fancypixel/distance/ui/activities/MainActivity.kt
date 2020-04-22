@@ -7,34 +7,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
-import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.Navigation
-import com.google.android.material.transition.MaterialContainerTransformSharedElementCallback
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionDeniedResponse
-import com.karumi.dexter.listener.PermissionGrantedResponse
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import com.karumi.dexter.listener.single.PermissionListener
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
-import it.fancypixel.distance.ui.fragments.MainFragmentDirections
 import it.fancypixel.distance.ui.fragments.OnboardingFragment
-import it.fancypixel.distance.ui.fragments.OnboardingFragmentDirections
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
-import it.fancypixel.distance.utils.toast
-import kotlinx.android.synthetic.main.main_fragment.*
-import kotlinx.coroutines.*
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -81,6 +66,12 @@ class MainActivity : AppCompatActivity() {
   override fun onResume() {
     super.onResume()
 
+//    Preferences.showIntro = true
+//    val config = Configuration()
+//    config.setLocale(Locale.ITALIAN)
+//    resources.updateConfiguration(config, resources.displayMetrics)
+
+
     if (Preferences.showIntro && mainNavController?.currentDestination?.id != R.id.onboardingFragment) {
       mainNavController?.navigate(R.id.onboardingFragment)
     }
@@ -91,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Check location permission
-    viewModel.isPermissionGranted.value = checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    viewModel.isPermissionGranted.value = checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     viewModel.isPermissionGranted.observe(this, Observer {
       if (!it && !Preferences.showIntro && mainNavController?.currentDestination?.id != R.id.onboardingFragment) {
         mainNavController?.navigate(R.id.onboardingFragment, bundleOf("section" to OnboardingFragment.Companion.IntroSection.BLUETOOTH))

@@ -8,6 +8,7 @@ import android.os.Vibrator
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import com.chibatching.kotpref.Kotpref
+import io.realm.Realm
 import it.fancypixel.distance.BuildConfig
 import it.fancypixel.distance.components.events.NearbyBeaconEvent
 import it.fancypixel.distance.services.BeaconService
@@ -29,6 +30,9 @@ class CustomApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Realm
+        Realm.init(this)
 
         // Preferences
         Kotpref.init(this)

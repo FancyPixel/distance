@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="intro_icon_dimen">300dp</dimen>
+    <dimen name="intro_icon_dimen_corner_radius">150dp</dimen>
+    <dimen name="intro_icon_margin_top">48dp</dimen>
+    <dimen name="intro_icon_margin_bottom">24dp</dimen>
+    <dimen name="intro_icon_text_padding">32dp</dimen>
+    <dimen name="main_icon_dimen">280dp</dimen>
+    <dimen name="main_icon_dimen_corner_radius">140dp</dimen>
+    <dimen name="main_clock_margin_bottom">90dp</dimen>
+    <dimen name="main_clock_margin_right">31dp</dimen>
+    <dimen name="main_clock_text_size">32dp</dimen>
+</resources>
