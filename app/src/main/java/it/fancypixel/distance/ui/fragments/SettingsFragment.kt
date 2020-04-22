@@ -99,12 +99,6 @@ class SettingsFragment : Fragment() {
             .attachTo(settings_list)
 
         updateSettingsMenu()
-
-
-        val list = Realm.getDefaultInstance().where(Bump::class.java).findAll()
-        for (bump in list) {
-            Log.d("ciao", "Bump: ${bump}")
-        }
     }
 
     private fun showToleranceMenu() {
