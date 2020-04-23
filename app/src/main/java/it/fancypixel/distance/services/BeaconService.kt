@@ -179,16 +179,14 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                         // Device location error
                         val deviceLocationError = when (Preferences.deviceLocation) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 1.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 2.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 6.0
                             else -> 0.0
                         }
 
                         val location = (beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000
                         val transmittingDeviceLocationError = when (location) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 1.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_BACKPACK -> 2.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 6.0
                             else -> 0.0
                         }
 
@@ -204,9 +202,9 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
                         // Battery level error
                         val level = beacon.id3.toInt() % 1000
-                        val batteryLevelError = (100 - level) / 100 * 10.0
+                        val batteryLevelError = (100 - level) / 100 * 5.0
 
-                        val calculatedMinDistance = 2 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError
+                        val calculatedMinDistance = 1.0 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError
 
                         if (beacon.distance < calculatedMinDistance) {
                             EventBus.getDefault().post(NearbyBeaconEvent(beacon))
@@ -327,8 +325,9 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
         with(NotificationManagerCompat.from(this)) {
-            notify(WAKEUP_NOTIFICATION_ID, builder.build())
-            cancel(WAKEUP_NOTIFICATION_ID)
+            val id = WAKEUP_NOTIFICATION_ID + (2..2000).random()
+            notify(id, builder.build())
+            cancel(id)
         }
     }
 
@@ -424,9 +423,9 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
     }
 
     companion object {
-        private const val NOTIFICATION_ID = 364
-        private const val WAKEUP_NOTIFICATION_ID = 365
-        private const val INACTIVE_NOTIFICATION_ID = 366
+        private const val NOTIFICATION_ID = 30
+        private const val WAKEUP_NOTIFICATION_ID = 31
+        private const val INACTIVE_NOTIFICATION_ID = 32
         const val REGION_TAG = "REGION_NEAR"
         const val BEACON_ID = "A2B2265F-77F6-4C6A-82ED-297B366FC684"
         const val BEACON_MAJOR = 12345

@@ -53,7 +53,7 @@ class CustomApplication: Application() {
             lastUseFullTime.set(Calendar.SECOND, 0)
             lastUseFullTime.set(Calendar.MILLISECOND, 0)
             lastUseFullTime.add(Calendar.DAY_OF_YEAR, -21)
-            
+
             val list = realm.where(Bump::class.java).lessThan("date", lastUseFullTime.timeInMillis).findAll()
             list.deleteAllFromRealm()
         }
