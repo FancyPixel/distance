@@ -16,7 +16,7 @@
             android:paddingLeft="32dp"
             android:paddingRight="32dp"
             android:textSize="16sp"
-            android:text="How it works"
+            android:text="Come funziona"
             android:textColor="@color/colorSecondaryText"/>
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -53,7 +53,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Bluetooth Low Energy"
+                            android:text="Tecnologia"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -64,7 +64,7 @@
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
                             android:justificationMode="inter_word"
-                            android:text="TODO" />
+                            android:text="Utilizziamo il Bluetooth Low Energy per monitorare la distanza dalle persone che hai attorno a te. Non utilizzeremo la tua posizione GPS." />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
                 <com.google.android.material.card.MaterialCardView
@@ -80,7 +80,7 @@
                         android:alpha="0.3"
                         android:layout_gravity="end"
                         android:layout_margin="24dp"
-                        android:src="@drawable/ic_incognito" />
+                        android:src="@drawable/round_cloud_off" />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Identificativi anonimi"
+                            android:text="Privacy"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -106,7 +106,49 @@
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
                             android:justificationMode="inter_word"
-                            android:text="Rispettiamo la tua privacy garantendo un servizio è totalmente anonimo grazie all’utilizzo di identificativi che vengono salvati in locale e non vengono mai inviati online." />
+                            android:text="Rispettiamo la tua privacy garantendo un servizio totalmente anonimo grazie all’utilizzo di identificativi non legati ad informazioni personali." />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="300dp"
+                    android:layout_height="200dp"
+                    android:layout_marginLeft="0dp"
+                    style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_widgets" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:padding="24dp"
+                        android:orientation="vertical">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                            app:textAllCaps="false"
+                            android:textSize="18sp"
+                            android:lines="1"
+                            android:letterSpacing="0"
+                            android:text="Dispositivi incontrati"
+                            android:textColor="@color/colorPrimaryText"/>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textSize="16sp"
+                            android:lineHeight="20dp"
+                            android:layout_marginTop="4dp"
+                            android:justificationMode="inter_word"
+                            android:text="Per tua informazione personale l’applicazione registra i dispositivi con cui sei venuto in contatto. Questi dati sono mantenuti unicamente sul tuo telefono." />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
                 <com.google.android.material.card.MaterialCardView
@@ -148,61 +190,19 @@
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
                             android:justificationMode="inter_word"
-                            android:text="Quando la distanza tra due dispositivi scende sotto la soglia di sicurezza verrai notificato tramite una notifica non invasiva. Puoi modificare il tipo di notifica dalla impostazioni." />
+                            android:text="Quando la distanza tra due dispositivi scende sotto la soglia di sicurezza verrai notificato in maniera non invasiva." />
                         <com.google.android.material.button.MaterialButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Modifica tipo notifica"
                             android:textAllCaps="false"
-                            android:id="@+id/action_change_tolerance"
+                            android:id="@+id/action_change_notification"
                             style="@style/Widget.MaterialComponents.Button.TextButton"
                             android:textColor="@color/colorAccent"
                             android:layout_gravity="start"
                             android:letterSpacing="0"
                             android:textSize="16sp"
                             android:layout_marginStart="-8dp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="300dp"
-                    android:layout_height="200dp"
-                    android:layout_marginLeft="0dp"
-                    style="@style/AppTheme.MainCard">
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:padding="2dp"
-                        app:tint="@color/colorPrimaryText"
-                        android:alpha="0.3"
-                        android:layout_gravity="end"
-                        android:layout_margin="24dp"
-                        android:src="@drawable/round_not_listed_location" />
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_horizontal"
-                        android:padding="24dp"
-                        android:orientation="vertical">
-                        <androidx.appcompat.widget.AppCompatTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-                            app:textAllCaps="false"
-                            android:textSize="18sp"
-                            android:lines="1"
-                            android:letterSpacing="0"
-                            android:text="Tracciamento"
-                            android:textColor="@color/colorPrimaryText"/>
-                        <androidx.appcompat.widget.AppCompatTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                            android:textColor="@color/colorPrimaryText"
-                            android:textSize="16sp"
-                            android:lineHeight="20dp"
-                            android:layout_marginTop="4dp"
-                            android:justificationMode="inter_word"
-                            android:text="TODO" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

@@ -104,8 +104,8 @@
     <string name="battery_saver_enabled_title">Disable the battery saver</string>
     <string name="near_devices">Near\nDevices</string>
     <string name="near_device">Near\nDevice</string>
-    <string name="today_bumps">Bumps\nToday</string>
-    <string name="today_bump">Bump\nToday</string>
+    <string name="today_bumps">Today\nBumps</string>
+    <string name="today_bump">Today\nBump</string>
     <string name="today">Today</string>
     <string name="action_share">Share Distance</string>
     <string name="action_share_message">Send this app with your contacts</string>

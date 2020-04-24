@@ -32,6 +32,7 @@ import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import kotlinx.android.synthetic.main.battery_saver_warning_layout.*
 import kotlinx.android.synthetic.main.device_count_layout.*
+import kotlinx.android.synthetic.main.how_it_works_layout.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.header
 import kotlinx.android.synthetic.main.tolerance_tip_layout.*
@@ -158,6 +159,10 @@ class MainFragment : Fragment() {
         }
 
         action_change_tolerance.setOnClickListener {
+            Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment)
+        }
+
+        action_change_notification.setOnClickListener {
             Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment)
         }
     }
