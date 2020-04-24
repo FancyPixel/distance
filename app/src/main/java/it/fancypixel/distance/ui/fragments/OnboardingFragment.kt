@@ -1,22 +1,24 @@
 package it.fancypixel.distance.ui.fragments
 
 import android.Manifest
-import android.content.pm.PackageManager
+import android.Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
-import androidx.annotation.DrawableRes
+import androidx.browser.customtabs.CustomTabsClient.getPackageName
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.transition.MaterialFadeThrough
 import com.karumi.dexter.Dexter
@@ -29,9 +31,7 @@ import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.setCurrentItem
-import kotlinx.android.synthetic.main.intro_view.*
 import kotlinx.android.synthetic.main.intro_view.view.*
-import kotlinx.android.synthetic.main.intro_view.view.icon
 import kotlinx.android.synthetic.main.onboarding_fragment.*
 import net.idik.lib.slimadapter.SlimAdapter
 import kotlin.math.abs
@@ -208,6 +208,17 @@ class OnboardingFragment : Fragment() {
                 viewModel.isPermissionGranted.value = false
             }
             .check()
+    }
+
+    private fun requestIgnoreBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            startActivity(
+                Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:" + requireActivity().packageName)
+                )
+            )
+        }
     }
 
     private class IntroItem(val id: IntroSection, val title: String, val message: String, val icon: Drawable?, val buttonCallBack: View.OnClickListener? = null)

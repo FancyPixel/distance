@@ -19,6 +19,7 @@ import android.hardware.SensorManager
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.*
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -27,8 +28,18 @@ import io.realm.Realm
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.components.events.NearbyBeaconEvent
+import it.fancypixel.distance.db.BumpRepository
 import it.fancypixel.distance.global.Constants
-import it.fancypixel.distance.models.Bump
+import it.fancypixel.distance.db.models.Bump
+import it.fancypixel.distance.global.Constants.BEACON_ID
+import it.fancypixel.distance.global.Constants.BEACON_LAYOUT
+import it.fancypixel.distance.global.Constants.GLOBAL_ORGANIZATION_ID
+import it.fancypixel.distance.global.Constants.IMMEDIATE_DELAY
+import it.fancypixel.distance.global.Constants.INACTIVE_NOTIFICATION_ID
+import it.fancypixel.distance.global.Constants.NEAR_DELAY
+import it.fancypixel.distance.global.Constants.NOTIFICATION_ID
+import it.fancypixel.distance.global.Constants.REGION_TAG
+import it.fancypixel.distance.global.Constants.WAKEUP_NOTIFICATION_ID
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.utils.toast
 import kotlinx.coroutines.*
@@ -49,14 +60,17 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
     private val beaconParser by lazy { BeaconParser().setBeaconLayout(BEACON_LAYOUT) }
     private val beaconTransmitter by lazy { BeaconTransmitter(this, beaconParser) }
     private val isAdvertisingPossible by lazy { !(BluetoothAdapter.getDefaultAdapter().isEnabled && BeaconTransmitter.checkTransmissionSupported(application) != BeaconTransmitter.SUPPORTED) }
+    private val repository by lazy { BumpRepository() }
 
     private val sensorManager by lazy { getSystemService(SENSOR_SERVICE) as SensorManager }
 
-    private val bluetoothBroadcastReceiver by lazy {
+    private val broadcastReceiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
-                    updateServiceNotification()
+                    updateInactiveNotification()
+                } else if (intent.action == PowerManager.ACTION_POWER_SAVE_MODE_CHANGED) {
+                    updateInactiveNotification()
                 }
             }
         }
@@ -102,6 +116,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                     notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
                 }
                 Preferences.isServiceEnabled = true
+                updateInactiveNotification()
 
             }
             Constants.ACTION_STOP_FOREGROUND_SERVICE -> {
@@ -131,7 +146,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
         val beacon = Beacon.Builder()
             .setId1(BEACON_ID)
-            .setId2("$BEACON_MAJOR".padStart(5, '0'))
+            .setId2("$GLOBAL_ORGANIZATION_ID".padStart(5, '0'))
             .setId3("${Preferences.deviceLocation}${"%03d".format(batLevel)}")
             .setManufacturer(0x004c)
             .setTxPower(-59)
@@ -167,7 +182,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
                 beaconManager.backgroundBetweenScanPeriod = if (state > 0) 1900L else 10000L
                 beaconManager.backgroundScanPeriod = if (state > 0) 1100L else 1100L
-                beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, null, Identifier.parse("$BEACON_MAJOR"), null))
+                beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, null, Identifier.parse("$GLOBAL_ORGANIZATION_ID"), null))
 
                 beaconManager.removeAllRangeNotifiers()
                 beaconManager.addRangeNotifier { beacons, _ ->
@@ -179,19 +194,19 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
                         // Device location error
                         val deviceLocationError = when (Preferences.deviceLocation) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 6.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 3.0
                             else -> 0.0
                         }
 
                         val location = (beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000
                         val transmittingDeviceLocationError = when (location) {
                             Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 6.0
+                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 3.0
                             else -> 0.0
                         }
 
                         // Tolerance error
-                        val toleranceError = when (Preferences.tolerance) {
+                        val toleranceError = when (if (Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_DESK) Preferences.tolerance else Preferences.pocketTolerance) {
                             Constants.PREFERENCE_TOLERANCE_LOW -> -2.0
                             Constants.PREFERENCE_TOLERANCE_MIN -> -1.0
                             Constants.PREFERENCE_TOLERANCE_DEFAULT -> 0.0
@@ -208,27 +223,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
                         if (beacon.distance < calculatedMinDistance) {
                             EventBus.getDefault().post(NearbyBeaconEvent(beacon))
-                            Realm.getDefaultInstance().executeTransactionAsync { realm ->
-                                val currentIdNum: Number? = realm.where(Bump::class.java).max("id")
-                                val bump = realm.createObject(Bump::class.java, currentIdNum?.toInt()?.plus(1) ?: 1)
-                                bump.beaconUuid = beacon.id1.toString()
-                                bump.major = beacon.id2.toInt()
-                                bump.location = location
-                                bump.batteryLevel = level
-                                bump.distance = beacon.distance
-                                bump.calculatedDistance = when {
-                                    beacon.distance < calculatedMinDistance / 2 -> {
-                                        Constants.BeaconDistance.IMMEDIATE.value
-                                    }
-                                    beacon.distance < calculatedMinDistance -> {
-                                        Constants.BeaconDistance.NEAR.value
-                                    }
-                                    else -> {
-                                        Constants.BeaconDistance.FAR.value
-                                    }
-                                }
-                                bump.date = Calendar.getInstance().timeInMillis
-                            }
+                            repository.addNewBump(beacon, location, level, calculatedMinDistance)
                         }
 
                         isSomeoneNear = beacon.distance < calculatedMinDistance
@@ -241,7 +236,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
         })
 
         try {
-            beaconManager.startMonitoringBeaconsInRegion(Region(REGION_TAG, null, Identifier.parse("$BEACON_MAJOR"), null))
+            beaconManager.startMonitoringBeaconsInRegion(Region(REGION_TAG, null, Identifier.parse("$GLOBAL_ORGANIZATION_ID"), null))
         } catch (e: RemoteException) {
             toast(getString(R.string.generic_error))
             stopBeaconService(this)
@@ -298,7 +293,7 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
         }
 
         GlobalScope.launch(Dispatchers.IO) {
-            delay(if (strong) 3000 else 10000)
+            delay(if (strong) IMMEDIATE_DELAY else NEAR_DELAY)
             withContext(Dispatchers.Main) {
                 if (strong) {
                     hasBeenStronglyNotified = false
@@ -309,11 +304,11 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
         }
     }
 
-    private fun isInteractive(): Boolean {
-        val powerManager =
-            getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isInteractive
-    }
+//    private fun isInteractive(): Boolean {
+//        val powerManager =
+//            getSystemService(Context.POWER_SERVICE) as PowerManager
+//        return powerManager.isInteractive
+//    }
 
     private fun wakeUpThePhone() {
         val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.wakeup_notification_channel_id))
@@ -347,13 +342,6 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
             .setOnlyAlertOnce(false)
             .setPriority(NotificationCompat.PRIORITY_LOW)
 
-        with(BluetoothAdapter.getDefaultAdapter()) {
-            if (!isEnabled) {
-                builder.setContentTitle(this@BeaconService.getString(R.string.notification_title_with_ble_off))
-                builder.setContentText(this@BeaconService.getString(R.string.notification_message_with_ble_off))
-            }
-        }
-
         // Action to disable the app
         val actionIntent: PendingIntent = PendingIntent.getBroadcast(this@BeaconService, 1, Intent(this@BeaconService, ToggleServiceReceiver::class.java).apply {
             action = Constants.ACTION_STOP_FOREGROUND_SERVICE
@@ -370,10 +358,45 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
         return builder
     }
 
-    private fun updateServiceNotification() {
-        if (Preferences.isServiceEnabled) {
-            with(NotificationManagerCompat.from(this)) {
-                notify(NOTIFICATION_ID, getServiceNotificationBuilder().build())
+    private fun getInactiveNotificationBuilder(): NotificationCompat.Builder {
+        // Handle the notification channel
+        createNotificationChannel(this@BeaconService)
+
+        val builder = NotificationCompat.Builder(this@BeaconService, getString(R.string.inactive_notification_channel_id))
+            .setSmallIcon(R.drawable.ic_stat_person)
+            .setContentTitle(this@BeaconService.getString(R.string.inactive_notification_title))
+            .setContentText(getString(R.string.inactive_notification_message))
+            .setColor(ContextCompat.getColor(this@BeaconService, R.color.errorColorText))
+            .setAutoCancel(true)
+            .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+            .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
+            .setOngoing(false)
+            .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        // Main intent that open the activity
+        builder.setContentIntent(PendingIntent.getActivity(this@BeaconService, 0, Intent(this@BeaconService, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT))
+
+        return builder
+    }
+
+    private fun updateInactiveNotification() {
+        var show = false
+        if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
+            show = true
+        }
+
+        with(getSystemService(Context.POWER_SERVICE) as PowerManager) {
+            if (isPowerSaveMode) {
+                show = true
+            }
+        }
+
+        with(NotificationManagerCompat.from(this)) {
+            if (Preferences.isServiceEnabled && show) {
+                    notify(INACTIVE_NOTIFICATION_ID, getInactiveNotificationBuilder().build())
+            } else {
+                cancel(INACTIVE_NOTIFICATION_ID)
             }
         }
     }
@@ -399,8 +422,9 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
         super.onCreate()
         val intentFiler = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+            addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         }
-        registerReceiver(bluetoothBroadcastReceiver, intentFiler)
+        registerReceiver(broadcastReceiver, intentFiler)
     }
 
     override fun onDestroy() {
@@ -416,20 +440,13 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
         sensorManager.unregisterListener(this)
 
-        unregisterReceiver(bluetoothBroadcastReceiver)
+        unregisterReceiver(broadcastReceiver)
 
         ringtone.release()
         super.onDestroy()
     }
 
     companion object {
-        private const val NOTIFICATION_ID = 30
-        private const val WAKEUP_NOTIFICATION_ID = 31
-        private const val INACTIVE_NOTIFICATION_ID = 32
-        const val REGION_TAG = "REGION_NEAR"
-        const val BEACON_ID = "A2B2265F-77F6-4C6A-82ED-297B366FC684"
-        const val BEACON_MAJOR = 12345
-        const val BEACON_LAYOUT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"
 
         fun startBeaconService(mContext: Context) {
             val startIntent = Intent(mContext, BeaconService::class.java)

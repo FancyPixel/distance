@@ -1,4 +1,4 @@
-package it.fancypixel.distance.models
+package it.fancypixel.distance.db.models
 
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey

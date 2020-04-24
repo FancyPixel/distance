@@ -7,8 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.os.Bundle
+import android.os.PowerManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
@@ -19,7 +19,6 @@ import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.ui.fragments.OnboardingFragment
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
-import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     )
   }
 
-  private val bluetoothBroadcastReceiver by lazy {
+  private val broadcastReceiver by lazy {
     object : BroadcastReceiver() {
       override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
@@ -43,6 +42,10 @@ class MainActivity : AppCompatActivity() {
             BluetoothAdapter.STATE_TURNING_ON -> {
               viewModel.updateBluetoothStatus(status)
             }
+          }
+        } else if (intent.action == PowerManager.ACTION_POWER_SAVE_MODE_CHANGED) {
+          with(getSystemService(Context.POWER_SERVICE) as PowerManager) {
+            viewModel.isBatterySaverEnabled.value = isPowerSaveMode
           }
         }
       }
@@ -89,14 +92,20 @@ class MainActivity : AppCompatActivity() {
       }
     })
 
+    // Check battery saver
+    with(this.getSystemService(Context.POWER_SERVICE) as PowerManager) {
+      viewModel.isBatterySaverEnabled.value = isPowerSaveMode
+    }
+
     val intentFiler = IntentFilter().apply {
       addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+      addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
     }
-    registerReceiver(bluetoothBroadcastReceiver, intentFiler)
+    registerReceiver(broadcastReceiver, intentFiler)
   }
 
   override fun onStop() {
-    unregisterReceiver(bluetoothBroadcastReceiver)
+    unregisterReceiver(broadcastReceiver)
     super.onStop()
   }
 }

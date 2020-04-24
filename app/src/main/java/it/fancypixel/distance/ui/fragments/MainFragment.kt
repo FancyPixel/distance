@@ -20,14 +20,20 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.transition.MaterialSharedAxis
+import io.realm.RealmResults
 import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
+import it.fancypixel.distance.components.RealmLiveData
 import it.fancypixel.distance.components.events.NearbyBeaconEvent
 import it.fancypixel.distance.databinding.MainFragmentBinding
+import it.fancypixel.distance.db.models.Bump
 import it.fancypixel.distance.global.Constants
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
+import kotlinx.android.synthetic.main.battery_saver_warning_layout.*
+import kotlinx.android.synthetic.main.device_count_layout.*
 import kotlinx.android.synthetic.main.main_fragment.*
+import kotlinx.android.synthetic.main.main_fragment.header
 import net.idik.lib.slimadapter.SlimAdapter
 import org.altbeacon.beacon.Beacon
 import org.greenrobot.eventbus.EventBus
@@ -59,7 +65,7 @@ class MainFragment : Fragment() {
         viewModel = ViewModelProvider(activity as MainActivity).get(MainViewModel::class.java)
         val binding = DataBindingUtil.inflate<MainFragmentBinding>(inflater, R.layout.main_fragment, container, false)
 
-        subscribeUi(binding, viewModel.darkThemeMode, viewModel.isServiceEnabled, viewModel.nearbyBeacons, viewModel.isBluetoothDisabled, viewModel.debug)
+        subscribeUi(binding, viewModel.darkThemeMode, viewModel.isServiceEnabled, viewModel.nearbyBeacons, viewModel.isBluetoothDisabled, viewModel.isBatterySaverEnabled, viewModel.todayBumps, viewModel.debug)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -69,21 +75,12 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        // Toolbar
         action_settings.setOnClickListener {
             Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment)
         }
 
-        action_ble_error.setOnClickListener {
-            MaterialAlertDialogBuilder(requireActivity(), R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setCancelable(true)
-                .setTitle(getString(R.string.advertising_not_available_title))
-                .setMessage(resources.getString(R.string.advertising_not_possible_message))
-                .setPositiveButton(resources.getString(android.R.string.ok)) { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
-        }
-
+        // Beacon List
         beacons_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
             requireActivity(),
             androidx.recyclerview.widget.LinearLayoutManager.VERTICAL,
@@ -128,6 +125,7 @@ class MainFragment : Fragment() {
 
         })
 
+        // Action buttons
         action_enable.setOnClickListener {
             disabled_service_ui.animate().translationY(disabled_service_ui.height.toFloat()).withEndAction {
                 viewModel.startService()
@@ -145,6 +143,18 @@ class MainFragment : Fragment() {
                 viewModel.stopService()
             }.start()
         }
+
+        if (Preferences.showAdvertisingError && viewModel.showAdvertisingError) {
+            MaterialAlertDialogBuilder(requireActivity(), R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setCancelable(true)
+                .setTitle(getString(R.string.advertising_not_available_title))
+                .setMessage(resources.getString(R.string.advertising_not_possible_message))
+                .setPositiveButton(resources.getString(android.R.string.ok)) { dialog, _ ->
+                    Preferences.showAdvertisingError = false
+                    dialog.dismiss()
+                }
+                .show()
+        }
     }
 
 
@@ -154,13 +164,13 @@ class MainFragment : Fragment() {
         isServiceEnabled: LiveData<Boolean>,
         nearbyBeacons: LiveData<ArrayList<Any>>,
         isBluetoothDisabled: MutableLiveData<Boolean>,
+        isBatterySaverEnabled: MutableLiveData<Boolean>,
+        todayBumps: RealmLiveData<Bump>?,
         debug: LiveData<Boolean>
     ) {
         darkThemeMode.observe(viewLifecycleOwner, Observer {
             AppCompatDelegate.setDefaultNightMode(it)
         })
-
-        binding.isAdvertisingPossible = !viewModel.showAdvertisingError
 
         nearbyBeacons.observe(viewLifecycleOwner, Observer {
             if (Preferences.isServiceEnabled) {
@@ -171,7 +181,15 @@ class MainFragment : Fragment() {
             }
             adapter.updateData(it)
 
-            nearby_device_count.text = if (it.size < 10) it.size.toString() else "9+"
+            nearby_device_count.text = it.size.toString()
+            nearby_device_text.text = if (it.size == 1) getString(R.string.near_device) else getString(R.string.near_devices)
+            nearby_device_count.setTextColor(ContextCompat.getColor(requireContext(), if (it.size == 0) R.color.colorAccent else R.color.errorColorText))
+        })
+
+        todayBumps?.observe(viewLifecycleOwner, Observer {
+            val groupedBumps = extractTodayBumps(it)
+            bump_count.text = groupedBumps.keys.size.toString()
+            bump_count_text.text = if (groupedBumps.keys.size == 1) getString(R.string.today_bump) else getString(R.string.today_bumps)
         })
 
         isServiceEnabled.observe(viewLifecycleOwner, Observer {
@@ -204,6 +222,10 @@ class MainFragment : Fragment() {
             service_status_bg.setBackgroundColor(ContextCompat.getColor(requireContext(), if (it) R.color.errorColorText else android.R.color.transparent))
             service_status.text = if (it) getString(R.string.service_paused) else getString(R.string.service_enabled)
         })
+
+        isBatterySaverEnabled.observe(viewLifecycleOwner, Observer {
+            battery_saver_warning.isVisible = it
+        })
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -221,6 +243,9 @@ class MainFragment : Fragment() {
         EventBus.getDefault().unregister(this)
     }
 
+    private fun extractTodayBumps(bumps: RealmResults<Bump>?): Map<String, Int> {
+        return bumps?.groupingBy { it.beaconUuid }?.eachCount() ?: HashMap()
+    }
 
     /**
      *  Data Binding adapters for UI margins

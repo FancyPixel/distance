@@ -15,8 +15,12 @@ object Preferences : KotprefModel() {
     var deviceMinor by intPref(default = -1)
     var notificationType by intPref(default = Constants.PREFERENCE_NOTIFICATION_TYPE_ONLY_VIBRATE)
     var tolerance by intPref(default = Constants.PREFERENCE_TOLERANCE_DEFAULT)
+    var pocketTolerance by intPref(default = Constants.PREFERENCE_TOLERANCE_DEFAULT)
     var deviceLocation by intPref(default = Constants.PREFERENCE_DEVICE_LOCATION_POCKET)
     var useBatteryLevel by booleanPref(default = true)
     var debug by booleanPref(default = false)
     var showIntro by booleanPref(default = true)
+    var firebaseToken by stringPref()
+
+    var showAdvertisingError by booleanPref(default = true)
 }

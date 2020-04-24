@@ -23,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/colorPrimaryDark">
+        <!-- Toolbar -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="64dp"
@@ -43,7 +44,7 @@
                     android:tint="@color/errorColorText"
                     android:clickable="true"
                     android:focusable="true"
-                    android:visibility="@{isAdvertisingPossible ? View.GONE : View.VISIBLE, default=gone}"
+                    android:visibility="gone"
                     android:id="@+id/action_ble_error"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:layout_centerVertical="true"
@@ -76,6 +77,8 @@
                     android:contentDescription="@string/action_settings"/>
             </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Upper body -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -91,8 +94,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:paddingLeft="24dp"
                 android:paddingRight="24dp"
                 android:id="@+id/service_status_bg"
@@ -130,6 +133,8 @@
                     android:checked="@{viewModel.isServiceEnabled()}"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Main list -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -146,97 +151,15 @@
                     android:paddingTop="12dp"
                     android:paddingBottom="@{isDebugModeEnabled ? @dimen/bottom_sheet_enabled_bottom_margin : @dimen/bottom_sheet_disabled_bottom_margin, default=@dimen/bottom_sheet_disabled_bottom_margin}"
                     android:orientation="vertical">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginLeft="24dp"
-                        android:layout_marginRight="24dp"
-                        android:layout_marginBottom="12dp"
-                        app:cardBackgroundColor="@color/colorPrimary"
-                        app:cardCornerRadius="9dp"
-                        app:cardElevation="4dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:paddingLeft="24dp"
-                            android:paddingRight="24dp"
-                            android:orientation="horizontal">
-                            <androidx.appcompat.widget.AppCompatTextView
-                                android:layout_width="0dp"
-                                android:layout_weight="2"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/colorAccent"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-                                android:textSize="160sp"
-                                android:id="@+id/nearby_device_count"
-                                android:gravity="center_vertical"
-                                android:includeFontPadding="false"
-                                android:text="9+"/>
-                            <androidx.appcompat.widget.AppCompatTextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:lines="2"
-                                android:layout_marginTop="24dp"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-                                android:textColor="@color/colorPrimaryText"
-                                android:textSize="24sp"
-                                app:textAllCaps="false"
-                                android:layout_gravity="top"
-                                android:text="Dispositivi\nVicini" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginLeft="24dp"
-                        android:layout_marginRight="24dp"
-                        android:layout_marginBottom="12dp"
-                        app:cardBackgroundColor="@color/colorPrimary"
-                        app:cardCornerRadius="9dp"
-                        app:cardElevation="4dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:padding="24dp"
-                            android:orientation="vertical">
-                            <androidx.appcompat.widget.AppCompatTextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/colorPrimaryText"
-                                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                                android:text="Come funziona"/>
-                            <androidx.appcompat.widget.AppCompatTextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                                android:textColor="@color/colorPrimaryText"
-                                android:textSize="16sp"
-                                android:lineHeight="20dp"
-                                android:layout_marginTop="4dp"
-                                android:justificationMode="inter_word"
-                                android:text="Puoi uscire dall'applicazione, tenere il telefono in tasca o sulla scrivania (rivolto verso l'alto). Noi faremo il resto." />
-                            <androidx.appcompat.widget.AppCompatTextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                                android:textColor="@color/colorPrimaryText"
-                                android:textSize="16sp"
-                                android:lineHeight="20dp"
-                                android:layout_marginTop="8dp"
-                                android:justificationMode="inter_word"
-                                android:text="Ti avvertiremo quando ti avvicinerai troppo ad un'altra persona (con Distance attiva sul proprio dispositivo), inviando ad entrambi una notifica non invasiva." />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                    <include layout="@layout/battery_saver_warning_layout" />
+                    <include layout="@layout/device_count_layout" />
+                    <include layout="@layout/how_it_works_layout" />
+                    <include layout="@layout/how_it_works_layout" />
                 </LinearLayout>
             </ScrollView>
         </com.google.android.material.card.MaterialCardView>
 
-
+        <!-- Loader -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -258,6 +181,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- disabled state UI -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -270,7 +194,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:padding="24dp"
+                android:padding="16dp"
                 android:orientation="vertical">
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="@dimen/main_icon_dimen"
@@ -337,12 +261,14 @@
                     android:paddingRight="64dp"
                     android:paddingLeft="64dp"
                     app:elevation="0dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="24dp"
                     android:id="@+id/action_enable"
                     android:text="@string/action_enable"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Debug nearby beacons list -->
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/main"
             android:layout_width="match_parent"
@@ -352,7 +278,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:behavior_hideable="false"
-                app:behavior_peekHeight="@dimen/bottom_sheet_enabled_bottom_margin"
+                app:behavior_peekHeight="@dimen/bottom_sheet_enabled_peek"
                 app:cardElevation="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardBackgroundColor="@color/colorPrimary"

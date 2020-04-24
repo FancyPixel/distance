@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.chibatching.kotpref.livedata.asLiveData
 import it.fancypixel.distance.components.Preferences
+import it.fancypixel.distance.db.BumpRepository
 import it.fancypixel.distance.services.BeaconService
 import kotlinx.coroutines.*
 import org.altbeacon.beacon.Beacon
@@ -21,9 +22,12 @@ import kotlin.collections.HashMap
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val repository by lazy { BumpRepository() }
+
     // Settings
     var darkThemeMode: LiveData<Int> = Preferences.asLiveData(Preferences::darkThemePreference)
     var tolerance: LiveData<Int> = Preferences.asLiveData(Preferences::tolerance)
+    var pocketTolerance: LiveData<Int> = Preferences.asLiveData(Preferences::pocketTolerance)
     var debug: LiveData<Boolean> = Preferences.asLiveData(Preferences::debug)
     var notificationType: LiveData<Int> = Preferences.asLiveData(Preferences::notificationType)
     var batteryLevel: LiveData<Boolean> = Preferences.asLiveData(Preferences::useBatteryLevel)
@@ -36,12 +40,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val nearbyBeacons: LiveData<ArrayList<Any>> = _nearbyBeacons
     private val beaconsRegisteredTime: HashMap<String, Job> = HashMap()
 
+    // Bumps
+    val todayBumps = repository.getTodayBumpsLiveData()
+
     // Warnings
     val showAdvertisingError: Boolean by lazy {
         BluetoothAdapter.getDefaultAdapter().isEnabled && BeaconTransmitter.checkTransmissionSupported(application) != BeaconTransmitter.SUPPORTED
     }
     val isPermissionGranted: MutableLiveData<Boolean> = MutableLiveData(false)
     val isBluetoothDisabled: MutableLiveData<Boolean> = MutableLiveData(false)
+    val isBatterySaverEnabled: MutableLiveData<Boolean> = MutableLiveData(false)
 
     fun updateBeaconList(updatedBeacon: Beacon) {
         _nearbyBeacons.value?.let {

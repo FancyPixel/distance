@@ -23,7 +23,11 @@ import android.content.Intent
 import android.util.TypedValue
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.viewpager2.widget.ViewPager2
+import io.realm.RealmModel
+import io.realm.RealmObject
+import io.realm.RealmResults
 import it.fancypixel.distance.R
+import it.fancypixel.distance.components.RealmLiveData
 
 
 fun PackageManager.missingSystemFeature(name: String): Boolean = !hasSystemFeature(name)
@@ -157,3 +161,5 @@ fun ViewPager2.setCurrentItem(
     animator.duration = duration
     animator.start()
 }
+
+fun <T: RealmObject> RealmResults<T>.asLiveData() = RealmLiveData<T>(this)
