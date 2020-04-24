@@ -205,6 +205,45 @@
                             android:layout_marginStart="-8dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="300dp"
+                    android:layout_height="200dp"
+                    android:layout_marginLeft="0dp"
+                    android:id="@+id/action_open_how_it_work_online"
+                    style="@style/AppTheme.MainCard">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:gravity="center"
+                        android:padding="24dp"
+                        android:orientation="vertical">
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardElevation="0dp"
+                            android:layout_gravity="center"
+                            app:cardBackgroundColor="@color/colorPrimaryDark"
+                            app:cardCornerRadius="24dp">
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:padding="8dp"
+                                app:tint="@color/colorAccent"
+                                android:scaleX="-1"
+                                android:src="@drawable/round_arrow" />
+                        </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Scropri di più\nsul nostro sito"
+                            android:textAllCaps="false"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:textColor="@color/colorAccent"
+                            android:layout_gravity="start"
+                            android:letterSpacing="0"
+                            android:textSize="18sp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </HorizontalScrollView>
     </LinearLayout>

@@ -30,6 +30,7 @@ import it.fancypixel.distance.db.models.Bump
 import it.fancypixel.distance.global.Constants
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
+import it.fancypixel.distance.utils.openURI
 import kotlinx.android.synthetic.main.battery_saver_warning_layout.*
 import kotlinx.android.synthetic.main.device_count_layout.*
 import kotlinx.android.synthetic.main.how_it_works_layout.*
@@ -164,6 +165,10 @@ class MainFragment : Fragment() {
 
         action_change_notification.setOnClickListener {
             Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment)
+        }
+
+        action_open_how_it_work_online.setOnClickListener {
+            requireActivity().openURI("http://www.fancypixel.it")
         }
     }
 
