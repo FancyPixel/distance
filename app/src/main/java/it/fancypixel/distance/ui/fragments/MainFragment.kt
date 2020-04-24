@@ -34,6 +34,7 @@ import kotlinx.android.synthetic.main.battery_saver_warning_layout.*
 import kotlinx.android.synthetic.main.device_count_layout.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.header
+import kotlinx.android.synthetic.main.tolerance_tip_layout.*
 import net.idik.lib.slimadapter.SlimAdapter
 import org.altbeacon.beacon.Beacon
 import org.greenrobot.eventbus.EventBus
@@ -118,8 +119,8 @@ class MainFragment : Fragment() {
                 if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                     bottom_sheet.shapeAppearanceModel =
                         bottom_sheet.shapeAppearanceModel.withCornerSize(0f)
-                } else {
-                    bottom_sheet.shapeAppearanceModel = ShapeAppearanceModel.builder(requireContext(), R.style.ShapeAppearanceOverlay_MaterialCardView_Cut, 0).build()
+                } else {bottom_sheet.shapeAppearanceModel =
+                    bottom_sheet.shapeAppearanceModel.withCornerSize(9f)
                 }
             }
 
@@ -154,6 +155,10 @@ class MainFragment : Fragment() {
                     dialog.dismiss()
                 }
                 .show()
+        }
+
+        action_change_tolerance.setOnClickListener {
+            Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment)
         }
     }
 

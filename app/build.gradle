@@ -21,8 +21,8 @@ android {
         applicationId "it.fancypixel.distance"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 4
-        versionName "0.7"
+        versionCode 5
+        versionName "0.8"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -101,7 +101,7 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.github.skydoves:powermenu:2.0.8'
     implementation 'com.tbuonomo.andrui:viewpagerdotsindicator:4.1.2'
-    implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
+    implementation 'org.nield:kotlin-statistics:1.2.1'
 
     // Recommended: Add the Firebase SDK for Google Analytics.
     implementation 'com.google.firebase:firebase-analytics:17.3.0'
@@ -116,4 +116,5 @@ dependencies {
 
     // Permissions
     implementation 'com.karumi:dexter:6.1.0'
+    implementation 'com.android.support:cardview-v7:28.0.0'
 }

@@ -24,6 +24,7 @@ import it.fancypixel.distance.global.Constants
 import it.fancypixel.distance.ui.activities.MainActivity
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
 import it.fancypixel.distance.utils.openURI
+import it.fancypixel.distance.utils.shareAppLink
 import kotlinx.android.synthetic.main.settings_fragment.*
 import net.idik.lib.slimadapter.SlimAdapter
 
@@ -97,7 +98,7 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showToleranceMenu() {
-        BottomSheetMenu<Int>(requireContext()).selectResource(Preferences.tolerance)
+        BottomSheetMenu<Int>(requireContext(), getString(R.string.tolerance_menu_title)).selectResource(Preferences.tolerance)
             .addItem(getString(R.string.settings_subtitle_tolerance_max), Constants.PREFERENCE_TOLERANCE_MAX)
             .addItem(getString(R.string.settings_subtitle_tolerance_high), Constants.PREFERENCE_TOLERANCE_HIGH)
             .addItem(getString(R.string.settings_subtitle_tolerance_default), Constants.PREFERENCE_TOLERANCE_DEFAULT)
@@ -109,7 +110,7 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showPocketToleranceMenu() {
-        BottomSheetMenu<Int>(requireContext()).selectResource(Preferences.pocketTolerance)
+        BottomSheetMenu<Int>(requireContext(), getString(R.string.tolerance_menu_title)).selectResource(Preferences.pocketTolerance)
             .addItem(getString(R.string.settings_subtitle_tolerance_max), Constants.PREFERENCE_TOLERANCE_MAX)
             .addItem(getString(R.string.settings_subtitle_tolerance_high), Constants.PREFERENCE_TOLERANCE_HIGH)
             .addItem(getString(R.string.settings_subtitle_tolerance_default), Constants.PREFERENCE_TOLERANCE_DEFAULT)
@@ -197,10 +198,9 @@ class SettingsFragment : Fragment() {
         settings.add(
             SettingsItem(
                 getString(R.string.settings_title_id),
-                Preferences.deviceUUID.padStart(5, '0'),
-                R.drawable.round_notifications,
-                null)
+                Preferences.deviceUUID.padStart(5, '0')
             )
+        )
         settings.add(
             SettingsItem(
                 getString(R.string.settings_title_choose_theme),
@@ -211,8 +211,8 @@ class SettingsFragment : Fragment() {
                     AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM -> getString(R.string.settings_subtitle_dark_theme_follow_system)
                     else -> ""
                 },
-                R.drawable.ic_day_night,
-                View.OnClickListener { showDarkThemeMenu() })
+                clickListener = View.OnClickListener { showDarkThemeMenu() }
+            )
         )
 
 
@@ -227,8 +227,8 @@ class SettingsFragment : Fragment() {
                     Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH -> getString(R.string.settings_subtitle_notification_type_both)
                     else -> ""
                 },
-                R.drawable.round_notifications,
-                View.OnClickListener { showNotificationTypeMenu() })
+                clickListener = View.OnClickListener { showNotificationTypeMenu() }
+            )
         )
         settings.add(
             SettingsItem(
@@ -241,8 +241,8 @@ class SettingsFragment : Fragment() {
                     Constants.PREFERENCE_TOLERANCE_MAX -> getString(R.string.settings_subtitle_tolerance_max)
                     else -> ""
                 },
-                R.drawable.round_tune_24,
-                View.OnClickListener { showToleranceMenu() })
+                clickListener = View.OnClickListener { showToleranceMenu() }
+            )
         )
         settings.add(
             SettingsItem(
@@ -255,8 +255,8 @@ class SettingsFragment : Fragment() {
                     Constants.PREFERENCE_TOLERANCE_MAX -> getString(R.string.settings_subtitle_tolerance_max)
                     else -> ""
                 },
-                R.drawable.round_tune_24,
-                View.OnClickListener { showPocketToleranceMenu() })
+                clickListener = View.OnClickListener { showPocketToleranceMenu() }
+            )
         )
 
 
@@ -269,8 +269,8 @@ class SettingsFragment : Fragment() {
                         false -> getString(R.string.settings_subtitle_battery_error_off)
                         else -> ""
                     },
-                    R.drawable.round_notifications,
-                    View.OnClickListener { Preferences.useBatteryLevel = false })
+                    clickListener = View.OnClickListener { Preferences.useBatteryLevel = false }
+                )
             )
         }
 
@@ -280,25 +280,31 @@ class SettingsFragment : Fragment() {
             settings.add(
                 SettingsItem(
                     getString(R.string.advertising_not_available_title),
-                    getString(R.string.advertising_not_possible_message),
-                    R.drawable.round_notifications,
-                    null)
+                    getString(R.string.advertising_not_possible_message)
+                )
             )
         }
 
         settings.add(
             SettingsItem(
+                getString(R.string.action_share),
+                getString(R.string.action_share_message),
+                clickListener = View.OnClickListener { activity?.shareAppLink() }
+            )
+        )
+
+        settings.add(
+            SettingsItem(
                 getString(R.string.settings_title_company),
                 getString(R.string.settings_subtitle_company),
-                R.drawable.round_business_24,
-                View.OnClickListener { activity?.openURI("https://www.fancypixel.it/") })
+                clickListener = View.OnClickListener { activity?.openURI("https://www.fancypixel.it/") }
+            )
         )
 
         settings.add(
             SettingsItem(
                 getString(R.string.settings_title_app_version),
                 BuildConfig.VERSION_NAME,
-                R.drawable.round_send_24,
                 longClickListener = View.OnLongClickListener { if (BuildConfig.DEBUG) { Preferences.debug = !Preferences.debug }; true }
             )
         )

@@ -46,7 +46,11 @@ import kotlinx.coroutines.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import org.greenrobot.eventbus.EventBus
+import org.nield.kotlinstatistics.simpleRegression
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.math.abs
 
 
 class BeaconService : Service(), BeaconConsumer, SensorEventListener {
@@ -78,6 +82,8 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
 
     private var hasBeenNotified = false
     private var hasBeenStronglyNotified = false
+
+    private val nearbyBeacons = HashMap<String, ArrayList<Pair<Long, Double>>>()
 
     // Get instance of Vibrator from current Context
     private val v: Vibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
@@ -180,57 +186,91 @@ class BeaconService : Service(), BeaconConsumer, SensorEventListener {
             override fun didDetermineStateForRegion(state: Int, region: Region?) {
                 Log.i(TAG, "I have just switched from seeing/not seeing beacons: $state")
 
-                beaconManager.backgroundBetweenScanPeriod = if (state > 0) 1900L else 10000L
+                beaconManager.backgroundBetweenScanPeriod = if (state > 0) 1900L else 8000L
                 beaconManager.backgroundScanPeriod = if (state > 0) 1100L else 1100L
                 beaconManager.startRangingBeaconsInRegion(Region(REGION_TAG, null, Identifier.parse("$GLOBAL_ORGANIZATION_ID"), null))
 
+                if (state < 1 ) {
+                    nearbyBeacons.clear()
+                }
+
                 beaconManager.removeAllRangeNotifiers()
                 beaconManager.addRangeNotifier { beacons, _ ->
-                    var isSomeoneNear = false
-                    var isSomeoneVeryNear = false
-                    for (beacon in beacons) {
-                        Log.d(TAG, "I see a beacon at ${beacon.distance} meters away with a ${beacon.id3.toInt() % 1000}% battery.")
+                    GlobalScope.launch(Dispatchers.IO) {
+                        var isSomeoneNear = false
+                        var isSomeoneVeryNear = false
+                        for (beacon in beacons) {
+                            Log.d(
+                                TAG,
+                                "I see a beacon at ${beacon.distance} meters away with a ${beacon.id3.toInt() % 1000}% battery."
+                            )
 
-                        // Device location error
-                        val deviceLocationError = when (Preferences.deviceLocation) {
-                            Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 3.0
-                            else -> 0.0
+                            val uuid = beacon.id1.toString()
+                            val time = Calendar.getInstance().timeInMillis
+                            if (nearbyBeacons.containsKey(uuid)) {
+                                val list = ArrayList(nearbyBeacons[uuid]!!.filter { time - it.first < 10 * 1000 })
+                                list.add(time to beacon.distance)
+                                nearbyBeacons[uuid] = list
+                            } else {
+                                nearbyBeacons[uuid] = arrayListOf(time to beacon.distance)
+                            }
+
+                            val sequence = nearbyBeacons[uuid]!!.mapIndexed { index, pair -> index to pair.second }
+                            val slope = sequence.simpleRegression(xSelector = { it.first }, ySelector = { it.second }).slope
+                            val slopeError = if (abs(slope) > 0.2) 1.0 * slope / abs(slope) else 0.0
+
+                            // Device location error
+                            val deviceLocationError = when (Preferences.deviceLocation) {
+                                Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
+                                Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 3.0
+                                else -> 0.0
+                            }
+
+                            val location = (beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000
+                            val transmittingDeviceLocationError = when (location) {
+                                Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
+                                Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 3.0
+                                else -> 0.0
+                            }
+
+                            // Tolerance error
+                            val toleranceError =
+                                when (if (Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_DESK) Preferences.tolerance else Preferences.pocketTolerance) {
+                                    Constants.PREFERENCE_TOLERANCE_LOW -> -2.0
+                                    Constants.PREFERENCE_TOLERANCE_MIN -> -1.0
+                                    Constants.PREFERENCE_TOLERANCE_DEFAULT -> 0.0
+                                    Constants.PREFERENCE_TOLERANCE_HIGH -> 1.0
+                                    Constants.PREFERENCE_TOLERANCE_MAX -> 2.0
+                                    else -> 0.0
+                                }
+
+                            // Battery level error
+                            val level = beacon.id3.toInt() % 1000
+                            val batteryLevelError = (100 - level) / 100 * 5.0
+
+                            val calculatedMinDistance = 1.0 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError - slopeError
+
+                            if (beacon.distance < calculatedMinDistance) {
+                                EventBus.getDefault().post(NearbyBeaconEvent(beacon))
+
+                                withContext(Dispatchers.Main) {
+                                    repository.addNewBump(
+                                        beacon,
+                                        location,
+                                        level,
+                                        calculatedMinDistance
+                                    )
+                                }
+                            }
+
+                            isSomeoneNear = beacon.distance < calculatedMinDistance
+                            isSomeoneVeryNear = beacon.distance < calculatedMinDistance / 2
                         }
 
-                        val location = (beacon.id3.toInt() - beacon.id3.toInt() % 1000) / 1000
-                        val transmittingDeviceLocationError = when (location) {
-                            Constants.PREFERENCE_DEVICE_LOCATION_DESK -> 0.0
-                            Constants.PREFERENCE_DEVICE_LOCATION_POCKET -> 3.0
-                            else -> 0.0
+                        withContext(Dispatchers.Main) {
+                            notifyIf(isSomeoneNear, isSomeoneVeryNear)
                         }
-
-                        // Tolerance error
-                        val toleranceError = when (if (Preferences.deviceLocation == Constants.PREFERENCE_DEVICE_LOCATION_DESK) Preferences.tolerance else Preferences.pocketTolerance) {
-                            Constants.PREFERENCE_TOLERANCE_LOW -> -2.0
-                            Constants.PREFERENCE_TOLERANCE_MIN -> -1.0
-                            Constants.PREFERENCE_TOLERANCE_DEFAULT -> 0.0
-                            Constants.PREFERENCE_TOLERANCE_HIGH -> 1.0
-                            Constants.PREFERENCE_TOLERANCE_MAX -> 2.0
-                            else -> 0.0
-                        }
-
-                        // Battery level error
-                        val level = beacon.id3.toInt() % 1000
-                        val batteryLevelError = (100 - level) / 100 * 5.0
-
-                        val calculatedMinDistance = 1.0 + deviceLocationError + transmittingDeviceLocationError + toleranceError + batteryLevelError
-
-                        if (beacon.distance < calculatedMinDistance) {
-                            EventBus.getDefault().post(NearbyBeaconEvent(beacon))
-                            repository.addNewBump(beacon, location, level, calculatedMinDistance)
-                        }
-
-                        isSomeoneNear = beacon.distance < calculatedMinDistance
-                        isSomeoneVeryNear = beacon.distance < calculatedMinDistance / 2
                     }
-
-                    notifyIf(isSomeoneNear, isSomeoneVeryNear)
                 }
             }
         })

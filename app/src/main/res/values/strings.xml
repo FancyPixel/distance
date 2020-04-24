@@ -107,4 +107,7 @@
     <string name="today_bumps">Bumps\nToday</string>
     <string name="today_bump">Bump\nToday</string>
     <string name="today">Today</string>
+    <string name="action_share">Share Distance</string>
+    <string name="action_share_message">Send this app with your contacts</string>
+    <string name="tolerance_menu_title">Più la sensibilità sarà alta più il dispositivo risponderà a distanze maggiori.</string>
 </resources>

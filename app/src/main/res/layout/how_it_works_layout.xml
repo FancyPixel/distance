@@ -17,7 +17,7 @@
             android:paddingRight="32dp"
             android:textSize="16sp"
             android:text="How it works"
-            android:textColor="@color/colorAccent"/>
+            android:textColor="@color/colorSecondaryText"/>
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,6 +30,15 @@
                     android:layout_width="300dp"
                     android:layout_height="200dp"
                     style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_bluetooth" />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -44,7 +53,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Step 1"
+                            android:text="Bluetooth Low Energy"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -55,7 +64,7 @@
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
                             android:justificationMode="inter_word"
-                            android:text="Puoi uscire dall'applicazione, tenere il telefono in tasca o sulla scrivania (rivolto verso l'alto). Noi faremo il resto." />
+                            android:text="TODO" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
                 <com.google.android.material.card.MaterialCardView
@@ -63,6 +72,15 @@
                     android:layout_height="200dp"
                     android:layout_marginLeft="0dp"
                     style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/ic_incognito" />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -77,7 +95,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Step 1"
+                            android:text="Identificativi anonimi"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -88,7 +106,7 @@
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
                             android:justificationMode="inter_word"
-                            android:text="Puoi uscire dall'applicazione, tenere il telefono in tasca o sulla scrivania (rivolto verso l'alto). Noi faremo il resto." />
+                            android:text="Rispettiamo la tua privacy garantendo un servizio è totalmente anonimo grazie all’utilizzo di identificativi che vengono salvati in locale e non vengono mai inviati online." />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
                 <com.google.android.material.card.MaterialCardView
@@ -96,6 +114,15 @@
                     android:layout_height="200dp"
                     android:layout_marginLeft="0dp"
                     style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_notifications_active" />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -110,7 +137,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Step 1"
+                            android:text="@string/settings_title_notification_type"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -121,7 +148,61 @@
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
                             android:justificationMode="inter_word"
-                            android:text="Puoi uscire dall'applicazione, tenere il telefono in tasca o sulla scrivania (rivolto verso l'alto). Noi faremo il resto." />
+                            android:text="Quando la distanza tra due dispositivi scende sotto la soglia di sicurezza verrai notificato tramite una notifica non invasiva. Puoi modificare il tipo di notifica dalla impostazioni." />
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Modifica tipo notifica"
+                            android:textAllCaps="false"
+                            android:id="@+id/action_change_tolerance"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:textColor="@color/colorAccent"
+                            android:layout_gravity="start"
+                            android:letterSpacing="0"
+                            android:textSize="16sp"
+                            android:layout_marginStart="-8dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="300dp"
+                    android:layout_height="200dp"
+                    android:layout_marginLeft="0dp"
+                    style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_not_listed_location" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:padding="24dp"
+                        android:orientation="vertical">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                            app:textAllCaps="false"
+                            android:textSize="18sp"
+                            android:lines="1"
+                            android:letterSpacing="0"
+                            android:text="Tracciamento"
+                            android:textColor="@color/colorPrimaryText"/>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textSize="16sp"
+                            android:lineHeight="20dp"
+                            android:layout_marginTop="4dp"
+                            android:justificationMode="inter_word"
+                            android:text="TODO" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

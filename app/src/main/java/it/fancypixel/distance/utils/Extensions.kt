@@ -22,6 +22,7 @@ import kotlin.math.max
 import android.content.Intent
 import android.util.TypedValue
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.core.app.ShareCompat
 import androidx.viewpager2.widget.ViewPager2
 import io.realm.RealmModel
 import io.realm.RealmObject
@@ -82,6 +83,14 @@ fun Context.openURI(url: String) {
             Toast.makeText(this, R.string.error_opening_uri, Toast.LENGTH_LONG).show()
         }
     }
+}
+
+fun Activity.shareAppLink() {
+    ShareCompat.IntentBuilder.from(this)
+        .setType("text/plain")
+        .setChooserTitle(getString(R.string.action_share))
+        .setText("http://play.google.com/store/apps/details?id=" + this.packageName)
+        .startChooser();
 }
 
 fun Context.isTablet(): Boolean {

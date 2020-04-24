@@ -84,11 +84,11 @@
     <string name="action_back">Indietro</string>
     <string name="action_done">Fine</string>
     <string name="intro_welcome_title">Distance</string>
-    <string name="intro_welcome_subtitle">La soluzione gratuita e professionale per il tracciamento e il distanziamento sociale, dedicata alle imprese.</string>
+    <string name="intro_welcome_subtitle">La soluzione gratuita e professionale per il distanziamento sociale, dedicata alle imprese.</string>
     <string name="intro_location_title">Localizzazione</string>
-    <string name="intro_location_subtitle">Grazie all\'utilizzo del Bluetooth potremo localizzzare e monitorare i dispositivi nelle vicinanze, in modo totalmente anonimo.</string>
+    <string name="intro_location_subtitle">Grazie all\'utilizzo del Bluetooth potremo localizzare e monitorare i dispositivi nelle tue vicinanze, in modo totalmente anonimo.</string>
     <string name="intro_notifications_title">Notifiche</string>
-    <string name="intro_notifications_subtitle">Nel momento in cui un dispositivo sarà troppo vicino avvertiremo entrambi con una notifica non invasiva.</string>
+    <string name="intro_notifications_subtitle">Nel momento in cui un dispositivo sarà troppo vicino a te avvertiremo entrambi con una notifica non invasiva.</string>
     <string name="intro_all_set_title">Attiva il monitoraggio</string>
     <string name="intro_all_set_subtitle">Puoi abilitare e disabilitare il monitoraggio in ogni momento tramite l\'applicazione e dalla barra delle notifiche.</string>
     <string name="someone_is_near_notification_title">Localizzato un device</string>
@@ -102,4 +102,7 @@
     <string name="today_bumps">Dispositivi\nincontrati</string>
     <string name="today_bump">Dispositivo\nincontrato</string>
     <string name="today">Oggi</string>
+    <string name="action_share">Condividi Distance</string>
+    <string name="action_share_message">Conividi Distance con i tuoi contatti</string>
+    <string name="tolerance_menu_title">Più la sensibilità sarà alta più il dispositivo risponderà a distanze maggiori.</string>
 </resources>

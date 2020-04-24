@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <androidx.appcompat.widget.AppCompatTextView
+            android:textAppearance="@style/AppTheme.HeaderTextAppearance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="4dp"
+            android:paddingLeft="32dp"
+            android:paddingRight="32dp"
+            android:textSize="16sp"
+            android:text="Suggerimenti"
+            android:textColor="@color/colorSecondaryText"/>
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/AppTheme.MainCard"
+                    android:layout_width="300dp"
+                    android:layout_height="180dp">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_event_seat" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0"
+                            android:lines="1"
+                            android:text="Modalità scrivania"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textSize="18sp"
+                            app:textAllCaps="false" />
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:lineHeight="20dp"
+                            android:text="Durante il normale utilizzo dell'applicazione ti consigliamo di tenere il cellulare sulla scrivania con lo schermo rivolto verso l’alto."
+                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textSize="17sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="300dp"
+                    android:layout_height="180dp"
+                    android:layout_marginLeft="0dp"
+                    style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_dock" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:padding="24dp"
+                        android:orientation="vertical">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                            app:textAllCaps="false"
+                            android:textSize="18sp"
+                            android:lines="1"
+                            android:letterSpacing="0"
+                            android:text="Modalità tasca"
+                            android:textColor="@color/colorPrimaryText"/>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textSize="17sp"
+                            android:lineHeight="20dp"
+                            android:layout_marginTop="4dp"
+                            android:text="Quando hai il dispositivo in tasca il tuo corpo potrebbe essere un ostacolo alla comunicazione tra dispositivi e ridurre la precisione delle notifiche." />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="300dp"
+                    android:layout_height="180dp"
+                    android:layout_marginLeft="0dp"
+                    style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_flip_to_back" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:padding="24dp"
+                        android:orientation="vertical">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                            app:textAllCaps="false"
+                            android:textSize="18sp"
+                            android:lines="1"
+                            android:letterSpacing="0"
+                            android:text="Background"
+                            android:textColor="@color/colorPrimaryText"/>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textSize="17sp"
+                            android:lineHeight="20dp"
+                            android:layout_marginTop="4dp"
+                            android:text="Il monitoraggio rimarrà attivo anche a schermo spento e mentre utilizzi altre applicazioni. Puoi disabilitarlo in ogni momento." />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="300dp"
+                    android:layout_height="180dp"
+                    android:layout_marginLeft="0dp"
+                    style="@style/AppTheme.MainCard">
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:padding="2dp"
+                        app:tint="@color/colorPrimaryText"
+                        android:alpha="0.3"
+                        android:layout_gravity="end"
+                        android:layout_margin="24dp"
+                        android:src="@drawable/round_battery_charging_full" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:padding="24dp"
+                        android:orientation="vertical">
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                            app:textAllCaps="false"
+                            android:textSize="18sp"
+                            android:lines="1"
+                            android:letterSpacing="0"
+                            android:text="Ottimizzazione batteria"
+                            android:textColor="@color/colorPrimaryText"/>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                            android:textColor="@color/colorPrimaryText"
+                            android:textSize="17sp"
+                            android:lineHeight="20dp"
+                            android:layout_marginTop="4dp"
+                            android:text="Per il corretto funzionamento dell’applicazione non attivare il risparmio energetico. L’applicazione fa già un utilizzo ottimizzato della batteria." />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+</layout>
