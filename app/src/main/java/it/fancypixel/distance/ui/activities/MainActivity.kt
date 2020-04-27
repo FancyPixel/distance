@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.PowerManager
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,7 @@ import it.fancypixel.distance.R
 import it.fancypixel.distance.components.Preferences
 import it.fancypixel.distance.ui.fragments.OnboardingFragment
 import it.fancypixel.distance.ui.viewmodels.MainViewModel
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {

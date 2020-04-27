@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -36,7 +37,7 @@ import kotlinx.android.synthetic.main.device_count_layout.*
 import kotlinx.android.synthetic.main.how_it_works_layout.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import kotlinx.android.synthetic.main.main_fragment.header
-import kotlinx.android.synthetic.main.tolerance_tip_layout.*
+import kotlinx.android.synthetic.main.main_tip_layout.*
 import net.idik.lib.slimadapter.SlimAdapter
 import org.altbeacon.beacon.Beacon
 import org.greenrobot.eventbus.EventBus
@@ -160,11 +161,11 @@ class MainFragment : Fragment() {
         }
 
         action_change_tolerance.setOnClickListener {
-            Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment)
+            Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment, bundleOf("highlightTolerance" to true))
         }
 
-        action_change_notification.setOnClickListener {
-            Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment)
+        action_change_notification_type.setOnClickListener {
+            Navigation.findNavController(it).navigate(R.id.action_mainFragment_to_settingsFragment, bundleOf("highlightAlert" to true))
         }
 
         action_open_how_it_work_online.setOnClickListener {

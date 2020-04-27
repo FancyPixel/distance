@@ -1,65 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:paddingLeft="24dp"
-    android:paddingRight="24dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
     android:focusable="true"
     android:clickable="true"
     android:id="@+id/item"
-    android:background="?attr/selectableItemBackground"
-    android:gravity="center_vertical"
-    android:orientation="horizontal">
-    <RelativeLayout
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:visibility="gone">
-        <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:id="@+id/icon"
-            android:src="@drawable/ic_face_black"
-            android:tint="@color/colorPrimaryText"/>
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            app:cardCornerRadius="6dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_margin="10dp"
-            app:cardElevation="0dp"
-            android:elevation="0dp"
-            android:visibility="gone"
-            android:id="@+id/error_indicator"
-            app:cardBackgroundColor="@android:color/holo_red_dark"/>
-    </RelativeLayout>
+    android:foreground="?attr/selectableItemBackground"
+    app:cardElevation="0dp"
+    app:cardCornerRadius="0dp"
+    app:rippleColor="@color/colorAccent_op30"
+    app:cardBackgroundColor="@drawable/settings_item_background">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="start"
-        android:orientation="vertical">
-<!--        android:paddingLeft="18dp"-->
-<!--        android:paddingRight="18dp"-->
-        <androidx.appcompat.widget.AppCompatTextView
-            android:layout_width="wrap_content"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <RelativeLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:visibility="gone">
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="12dp"
+                android:id="@+id/icon"
+                android:src="@drawable/ic_face_black"
+                android:tint="@color/colorPrimaryText"/>
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                app:cardCornerRadius="6dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="10dp"
+                app:cardElevation="0dp"
+                android:elevation="0dp"
+                android:visibility="gone"
+                android:id="@+id/error_indicator"
+                app:cardBackgroundColor="@android:color/holo_red_dark"/>
+        </RelativeLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/title"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="16sp"
-            android:textColor="@color/colorPrimaryText"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-        <androidx.appcompat.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/subtitle"
-            android:fontFamily="sans-serif"
-            android:textColor="@color/colorPrimaryText"
-            android:alpha="0.8"
-            android:textSize="14sp"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:gravity="start"
+            android:orientation="vertical">
+            <!--        android:paddingLeft="18dp"-->
+            <!--        android:paddingRight="18dp"-->
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title"
+                android:fontFamily="sans-serif-medium"
+                android:textSize="16sp"
+                android:textColor="@color/colorPrimaryText"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/subtitle"
+                android:fontFamily="sans-serif"
+                android:textColor="@color/colorPrimaryText"
+                android:alpha="0.8"
+                android:textSize="16sp"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

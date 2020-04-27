@@ -16,7 +16,7 @@
             android:paddingLeft="32dp"
             android:paddingRight="32dp"
             android:textSize="16sp"
-            android:text="Suggerimenti"
+            android:text="@string/tip_section_title"
             android:textColor="@color/colorSecondaryText"/>
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -50,7 +50,7 @@
                             android:layout_height="wrap_content"
                             android:letterSpacing="0"
                             android:lines="1"
-                            android:text="Modalità scrivania"
+                            android:text="@string/tip_q1"
                             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
                             android:textColor="@color/colorPrimaryText"
                             android:textSize="18sp"
@@ -61,7 +61,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:lineHeight="20dp"
-                            android:text="Durante il normale utilizzo dell'applicazione ti consigliamo di tenere il cellulare sulla scrivania con lo schermo rivolto verso l’alto."
+                            android:text="@string/tip_a1"
                             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                             android:textColor="@color/colorPrimaryText"
                             android:textSize="17sp" />
@@ -96,7 +96,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Modalità tasca"
+                            android:text="@string/tip_q2"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -106,7 +106,7 @@
                             android:textSize="17sp"
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
-                            android:text="Quando hai il dispositivo in tasca il tuo corpo potrebbe essere un ostacolo alla comunicazione tra dispositivi e ridurre la precisione delle notifiche." />
+                            android:text="@string/tip_a2" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
                 <com.google.android.material.card.MaterialCardView
@@ -137,7 +137,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Background"
+                            android:text="@string/tip_q3"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -147,7 +147,7 @@
                             android:textSize="17sp"
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
-                            android:text="Il monitoraggio rimarrà attivo anche a schermo spento e mentre utilizzi altre applicazioni. Puoi disabilitarlo in ogni momento." />
+                            android:text="@string/tip_a3" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
                 <com.google.android.material.card.MaterialCardView
@@ -178,7 +178,7 @@
                             android:textSize="18sp"
                             android:lines="1"
                             android:letterSpacing="0"
-                            android:text="Ottimizzazione batteria"
+                            android:text="@string/tip_q4"
                             android:textColor="@color/colorPrimaryText"/>
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -188,7 +188,7 @@
                             android:textSize="17sp"
                             android:lineHeight="20dp"
                             android:layout_marginTop="4dp"
-                            android:text="Per il corretto funzionamento dell’applicazione non attivare il risparmio energetico. L’applicazione fa già un utilizzo ottimizzato della batteria." />
+                            android:text="@string/tip_a4" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

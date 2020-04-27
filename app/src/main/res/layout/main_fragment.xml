@@ -154,7 +154,17 @@
                     android:orientation="vertical">
                     <include layout="@layout/battery_saver_warning_layout" />
                     <include layout="@layout/device_count_layout" />
-                    <include layout="@layout/tolerance_tip_layout" />
+                    <include layout="@layout/main_tip_layout" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="32dp"
+                        android:background="@color/disabledButtonBackground" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="@color/colorPrimary" />
                     <include layout="@layout/tips_layout" />
                     <include layout="@layout/how_it_works_layout" />
                 </LinearLayout>

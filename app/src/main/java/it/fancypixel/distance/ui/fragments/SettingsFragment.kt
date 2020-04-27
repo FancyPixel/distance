@@ -44,6 +44,9 @@ class SettingsFragment : Fragment() {
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: SlimAdapter
 
+    private var highlightTolerance: Boolean = false
+    private var highlightAlert: Boolean = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -84,6 +87,7 @@ class SettingsFragment : Fragment() {
                     .clicked(R.id.item, item.clickListener)
                     .visibility(R.id.error_indicator, if (item.hasError) View.VISIBLE else View.GONE)
                     .longClicked(R.id.item, item.longClickListener)
+                    .selected(R.id.item, item.isSelected)
 
                 item.iconRes?.let {
                     injector.image(R.id.icon, ContextCompat.getDrawable(requireActivity(), it))
@@ -93,6 +97,17 @@ class SettingsFragment : Fragment() {
                 injector.text(R.id.header, header)
             }
             .attachTo(settings_list)
+
+
+
+        arguments?.let { bundle ->
+            bundle["highlightTolerance"]?.let {
+                highlightTolerance = true
+            }
+            bundle["highlightAlert"]?.let {
+                highlightAlert = true
+            }
+        }
 
         updateSettingsMenu()
     }
@@ -227,6 +242,7 @@ class SettingsFragment : Fragment() {
                     Constants.PREFERENCE_NOTIFICATION_TYPE_BOTH -> getString(R.string.settings_subtitle_notification_type_both)
                     else -> ""
                 },
+                isSelected = highlightAlert,
                 clickListener = View.OnClickListener { showNotificationTypeMenu() }
             )
         )
@@ -241,6 +257,7 @@ class SettingsFragment : Fragment() {
                     Constants.PREFERENCE_TOLERANCE_MAX -> getString(R.string.settings_subtitle_tolerance_max)
                     else -> ""
                 },
+                isSelected = highlightTolerance,
                 clickListener = View.OnClickListener { showToleranceMenu() }
             )
         )
@@ -255,6 +272,7 @@ class SettingsFragment : Fragment() {
                     Constants.PREFERENCE_TOLERANCE_MAX -> getString(R.string.settings_subtitle_tolerance_max)
                     else -> ""
                 },
+                isSelected = highlightTolerance,
                 clickListener = View.OnClickListener { showPocketToleranceMenu() }
             )
         )
@@ -329,6 +347,7 @@ class SettingsFragment : Fragment() {
         var iconRes: Int? = null,
         var clickListener: View.OnClickListener? = null,
         var hasError: Boolean = false,
+        var isSelected: Boolean = false,
         var longClickListener: View.OnLongClickListener? = null
     )
 
